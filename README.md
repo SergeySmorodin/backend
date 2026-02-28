@@ -38,5 +38,17 @@ poetry run python manage.py startapp <name>
 # Создать админа
 poetry run python manage.py createsuperuser
 
+# Настройка переменных окружения
+Создайте файл .env в корне проекта (рядом с manage.py):
 
+DJANGO_SECRET_KEY=***
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
+POSTGRES_DB=***
+POSTGRES_USER=***
+POSTGRES_PASSWORD=***
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+
+MEDIA_ROOT=

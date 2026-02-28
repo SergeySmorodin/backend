@@ -25,3 +25,37 @@ class User(AbstractUser):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
+    def save(self, *args, **kwargs):
+        """Создание директории пользователя при сохранении"""
+
+        if not self.storage_path:
+            # Уникальный путь для хранилища
+            user_dir = f"user_{self.id}_{uuid.uuid4().hex[:8]}"
+            self.storage_path = os.path.join("users", user_dir)
+
+        super().save(*args, **kwargs)
+
+        if not self.is_superuser:
+            self._create_user_storage()
+
+    def _create_user_storage(self):
+        """Создание директории для хранения файлов пользователя"""
+
+        try:
+            full_path = os.path.join(settings.MEDIA_ROOT, self.storage_path)
+            os.makedirs(full_path, exist_ok=True)
+            logger.info(
+                f"Создана директория хранилища для пользователя {self.username}: {full_path}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Ошибка создания директории для пользователя {self.username}: {str(e)}"
+            )
+
+    def get_storage_full_path(self):
+        """Получение полного пути к хранилищу пользователя"""
+
+        return os.path.join(settings.MEDIA_ROOT, self.storage_path)
+
+    def __str__(self):
+        return self.username

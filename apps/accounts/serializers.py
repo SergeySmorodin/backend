@@ -1,9 +1,12 @@
-from rest_framework import serializers
-from django.contrib.auth import authenticate
-from django.core.validators import EmailValidator, MinLengthValidator
-from django.contrib.auth.password_validation import validate_password
-from .models import User
 import logging
+
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.validators import EmailValidator, MinLengthValidator
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from .models import User
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +22,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     password2 = serializers.CharField(
         write_only=True, required=True, style={"input_type": "password"}
+    )
+
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(
+            queryset=User.objects.all(),
+            message="Пользователь с таким email уже существует"
+        )]
     )
 
     class Meta:

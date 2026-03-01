@@ -18,7 +18,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def temp_media_root():
     """Создает временную медиа-директорию для всех тестов"""
 

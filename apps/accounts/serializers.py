@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from .models import User
 
@@ -33,6 +34,22 @@ class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
 
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(
+            queryset=User.objects.all(),
+            message="Пользователь с таким email уже существует"
+        )]
+    )
+
+    username = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(
+            queryset=User.objects.all(),
+            message="Пользователь с таким username уже существует"
+        )]
+    )
+
     class Meta:
         model = User
         fields = ["username", "email", "password", "password2", "full_name"]
@@ -43,13 +60,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 "password": "Пароли не совпадают"
             })
         return attrs
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "Пользователь с таким email уже существует"
-            )
-        return value
 
     def create(self, validated_data):
         validated_data.pop("password2")

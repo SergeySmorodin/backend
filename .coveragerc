@@ -1,0 +1,14 @@
+[run]
+omit =
+    tests\*,
+    logs\*,
+    .venv\*,
+    manage.py,
+    static\*,
+    media\*,
+    templates\*,
+    *\migrations\*,
+    *\__init__.py,
+    *\admin.py,
+    config\*,
+    *settings.py

@@ -224,7 +224,7 @@ LOGGING = {
 AUTH_USER_MODEL = "accounts.User"
 
 # URL для входа
-LOGIN_URL = "/api/accounts/login/"
+LOGIN_URL = "/api/accounts/users/login/"
 
 # Настройки Spectacular
 SPECTACULAR_SETTINGS = {

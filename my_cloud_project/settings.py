@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 from config.general_config import DATABASES, SECRET_KEY, DEBUG, ALLOWED_HOSTS
 from config.logging_config import LOGGING
 from config.my_cloud_config import BASE_DIR, STATIC_URL, STATICFILES_DIRS, STATIC_ROOT, MEDIA_URL, MEDIA_ROOT, \
-    MAX_FILE_SIZE, ALLOWED_FILE_TYPES, ALLOWED_EXTENSIONS
+    STORAGE_SETTINGS
 
 # Application definition
 INSTALLED_APPS = [

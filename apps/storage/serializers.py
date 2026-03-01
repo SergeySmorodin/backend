@@ -1,11 +1,16 @@
 import logging
 import os
+import uuid
 
 from django.conf import settings
 from rest_framework import serializers
-from .models import UserFile
-from .utils.file_validators import validate_file_extension
+
 from apps.accounts.serializers import UserSerializer
+from .models import UserFile
+from .validators import (
+    validate_unique_filename,
+    FileValidator
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +54,11 @@ class FileListSerializer(serializers.ModelSerializer):
 
 
 class FileUploadSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(write_only=True, required=True)
+    file = serializers.FileField(
+        write_only=True,
+        required=True,
+        validators=[FileValidator()]
+    )
 
     class Meta:
         model = UserFile
@@ -58,23 +67,23 @@ class FileUploadSerializer(serializers.ModelSerializer):
             'comment': {'required': False, 'allow_blank': True}
         }
 
-    def validate_file(self, value):
-        validate_file_extension(value)
-        # Проверка размера файла
-        max_size = settings.STORAGE_SETTINGS.get('MAX_FILE_SIZE', 100 * 1024 * 1024)
-        if value.size > max_size:
-            max_size_mb = max_size / 1024 / 1024
-            raise serializers.ValidationError(
-                f"Размер файла превышает максимально допустимый ({max_size_mb:.0f} MB)"
-            )
-        return value
+    def validate(self, data):
+        """Дополнительная валидация"""
+        file = data.get('file')
+        user = self.context['request'].user
+
+        # Проверка уникальности имени
+        unique_name = validate_unique_filename(user, file.name)
+        data['unique_name'] = unique_name
+
+        return data
 
     def create(self, validated_data):
         file = validated_data.pop('file')
         user = self.context['request'].user
+        unique_name = validated_data.pop('unique_name', file.name)
 
         # Генерация пути для файла
-        import uuid
         ext = os.path.splitext(file.name)[1]
         unique_filename = f"{uuid.uuid4().hex}{ext}"
         relative_path = os.path.join(user.storage_path, unique_filename)
@@ -91,12 +100,13 @@ class FileUploadSerializer(serializers.ModelSerializer):
         # Создание записи в БД
         user_file = UserFile.objects.create(
             user=user,
-            original_name=file.name,
+            original_name=unique_name,
             size=file.size,
             file_path=relative_path,
             comment=validated_data.get('comment', '')
         )
 
+        logger.info(f"Файл загружен: {unique_name}, пользователь: {user.username}")
         return user_file
 
 

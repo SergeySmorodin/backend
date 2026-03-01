@@ -14,13 +14,20 @@ MEDIA_URL = '/media/'
 # Путь к директории для хранения загруженных файлов
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Максимальный размер файла для загрузки (в байтах)
-MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
-
-# Разрешенные типы файлов для загрузки
-ALLOWED_FILE_TYPES = [
-    'image/jpeg', 'image/png', 'application/pdf', 'text/plain',
-    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-]
-
-ALLOWED_EXTENSIONS = ['.txt', '.pdf', '.jpg', '.jpeg', '.png', '.docx', '.xlsx']
+STORAGE_SETTINGS = {
+    'BASE_STORAGE_PATH': MEDIA_ROOT,
+    'MAX_FILE_SIZE': 100 * 1024 * 1024,  # 100 MB
+    'ALLOWED_EXTENSIONS': [
+        '.txt', '.pdf', '.doc', '.docx',
+        '.jpg', '.jpeg', '.png', '.gif',
+        '.zip', '.rar', '.7z'
+    ],
+    'ALLOWED_MIME_TYPES': [
+        'text/plain',
+        'application/pdf',
+        'image/jpeg', 'image/png', 'image/gif',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/zip'
+    ],
+}

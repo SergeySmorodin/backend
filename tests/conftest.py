@@ -14,7 +14,8 @@ User = get_user_model()
 _ORIGINAL_MEDIA_ROOT = None
 
 pytest_plugins = [
-    "tests.api_tests.endpoints.accounts_url"
+    "tests.api_tests.endpoints.accounts_url",
+    "tests.api_tests.endpoints.storage_url",
 ]
 
 

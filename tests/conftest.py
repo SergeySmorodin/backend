@@ -124,7 +124,7 @@ def admin_token(admin_user):
 @pytest.fixture
 def test_file():
     """Фикстура для тестового файла"""
-    
+
     file_content = b"Test file content"
     test_file = SimpleUploadedFile(
         "test.txt",

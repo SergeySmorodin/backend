@@ -9,6 +9,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
+from tests.data_factories.fake_users_factory import RegularUserFactory, AdminUserFactory
+
 User = get_user_model()
 
 _ORIGINAL_MEDIA_ROOT = None
@@ -42,68 +44,35 @@ def temp_media_root():
 
 @pytest.fixture
 def api_client():
-    """Фикстура для API клиента"""
+    """API клиент"""
 
     return APIClient()
 
 
 @pytest.fixture
-def authenticated_client(api_client, regular_user):
-    """Фикстура для авторизованного клиента"""
+def regular_user():
+    return RegularUserFactory()
 
-    token, created = Token.objects.get_or_create(user=regular_user)
-    api_client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
+
+@pytest.fixture
+def admin_user():
+    return AdminUserFactory()
+
+
+@pytest.fixture
+def auth_client(api_client, regular_user):
+    """Авторизованный клиент"""
+
+    api_client.force_authenticate(user=regular_user)
     return api_client
 
 
 @pytest.fixture
 def admin_client(api_client, admin_user):
-    """Фикстура для авторизованного админ-клиента"""
+    """Клиент с авторизацией администратора"""
 
-    token, created = Token.objects.get_or_create(user=admin_user)
-    api_client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
+    api_client.force_authenticate(user=admin_user)
     return api_client
-
-
-@pytest.fixture
-def regular_user(db):
-    """Фикстура для обычного пользователя"""
-
-    user = User.objects.create_user(
-        username='testuser',
-        email='testuser@example.com',
-        password='testpass123',
-        full_name='Test User'
-    )
-    return user
-
-
-@pytest.fixture
-def another_user(db):
-    """Фикстура для другого обычного пользователя"""
-
-    user = User.objects.create_user(
-        username='anotheruser',
-        email='another@example.com',
-        password='testpass123',
-        full_name='Another User'
-    )
-    return user
-
-
-@pytest.fixture
-def admin_user(db):
-    """Фикстура для администратора"""
-
-    user = User.objects.create_superuser(
-        username='admin',
-        email='admin@example.com',
-        password='adminpass123',
-        full_name='Admin User'
-    )
-    user.is_admin = True
-    user.save()
-    return user
 
 
 @pytest.fixture
@@ -146,5 +115,3 @@ def test_image():
         content_type="image/gif"
     )
     return test_image
-
-

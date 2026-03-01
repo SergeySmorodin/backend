@@ -83,7 +83,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def logout(self, request):
         """Выход из системы"""
         try:
-            request.user.auth_token.delete()
+            if hasattr(request.user, 'auth_token'):
+                request.user.auth_token.delete()
             logout(request)
             return Response({"message": "Выход выполнен успешно"})
         except Exception as e:

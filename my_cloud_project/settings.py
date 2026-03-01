@@ -15,26 +15,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Загрузка переменных из .env файла
-load_dotenv()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
-    }
-}
+from config.general_config import DATABASES, SECRET_KEY, DEBUG, ALLOWED_HOSTS
+from config.logging_config import LOGGING
+from config.my_cloud_config import BASE_DIR, STATIC_URL, STATICFILES_DIRS, STATIC_ROOT, MEDIA_URL, MEDIA_ROOT, \
+    MAX_FILE_SIZE, ALLOWED_FILE_TYPES, ALLOWED_EXTENSIONS
 
 # Application definition
 INSTALLED_APPS = [
@@ -109,37 +93,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = "ru-ru"
-
 TIME_ZONE = "Europe/Moscow"
-
 USE_I18N = True
-
 USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-STORAGE_SETTINGS = {
-    "BASE_STORAGE_PATH": MEDIA_ROOT,
-    "MAX_FILE_SIZE": 100 * 1024 * 1024,  # 100 MB
-    "ALLOWED_EXTENSIONS": [
-        ".txt",
-        ".pdf",
-        ".doc",
-        ".docx",
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-    ],
-}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -177,48 +133,6 @@ else:
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 86400  # 24 часа
 SESSION_SAVE_EVERY_REQUEST = True
-
-# Автоматическое создание папки для логов
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-            "level": "DEBUG",
-            "filters": [],
-        },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
-            "formatter": "verbose",
-            "level": "DEBUG",
-            "encoding": "utf-8",
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "core": {
-            "handlers": ["console", "file"],
-            "level": "DEBUG",
-            "propagate": True,
-        },
-    },
-}
 
 # Кастомная модель пользователя
 AUTH_USER_MODEL = "accounts.User"

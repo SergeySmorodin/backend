@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 import pytest
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
@@ -19,6 +18,8 @@ _ORIGINAL_MEDIA_ROOT = None
 pytest_plugins = [
     "tests.api_tests.endpoints.accounts_url",
     "tests.api_tests.endpoints.storage_url",
+    "tests.data_factories.fake_files_factory",
+    "tests.data_factories.fake_users_factory",
 ]
 
 
@@ -97,4 +98,3 @@ def admin_token(admin_user):
 
     token, created = Token.objects.get_or_create(user=admin_user)
     return token
-

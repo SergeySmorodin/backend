@@ -3,11 +3,14 @@ from datetime import timedelta
 
 import pytest
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.utils import timezone
 
-from apps.accounts.models import User
 from apps.storage.models import UserFile, generate_share_token
+from tests.data_factories.fake_users_factory import RegularUserFactory
+
+User = get_user_model()
 
 
 @pytest.mark.units
@@ -332,9 +335,10 @@ class TestUserFilePhysicalDeletion:
             file_path = os.path.join(temp_media_root, "user_files", f"test{i}.txt")
             assert os.path.exists(file_path), f"Файл {file_path} должен существовать"
 
-    def test_multiple_files_different_users(self, regular_user, another_user):
+    def test_multiple_files_different_users(self, regular_user):
         """Тест работы с файлами разных пользователей"""
 
+        another_user = RegularUserFactory()
         # Создаем файлы для первого пользователя
         file1 = UserFile.objects.create(
             user=regular_user,

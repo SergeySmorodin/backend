@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from tests.data_factories.fake_users_factory import RegularUserFactory, AdminUserFactory
+from tests.config.data_factories.fake_users_factory import RegularUserFactory, AdminUserFactory
 
 User = get_user_model()
 
@@ -18,8 +18,8 @@ _ORIGINAL_MEDIA_ROOT = None
 pytest_plugins = [
     "tests.api_tests.endpoints.accounts_url",
     "tests.api_tests.endpoints.storage_url",
-    "tests.data_factories.fake_files_factory",
-    "tests.data_factories.fake_users_factory",
+    "tests.config.data_factories.fake_files_factory",
+    "tests.config.data_factories.fake_users_factory",
 ]
 
 

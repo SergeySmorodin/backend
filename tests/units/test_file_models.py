@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.storage.models import UserFile, generate_share_token
-from tests.data_factories.fake_users_factory import RegularUserFactory
+from tests.config.data_factories.fake_users_factory import RegularUserFactory
 
 User = get_user_model()
 

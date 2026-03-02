@@ -4,18 +4,31 @@ from rest_framework import permissions
 class IsAdminOrSelf(permissions.BasePermission):
     """
     Разрешение для работы с пользователями:
-    - GET: все аутентифицированные
-    - DELETE: только админ (и не себя)
+    - GET (список): только админ
+    - GET (детальный просмотр): админ или сам пользователь
     - PUT/PATCH: админ или сам пользователь
+    - DELETE: только админ
     """
 
+    def has_permission(self, request, view):
+        """Проверка на уровне view"""
+
+        return request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
+        """
+        Проверка на уровне объекта
+        Вызывается для retrieve/update/destroy
+        """
+        user = request.user
+
+        if user.is_staff or user.is_admin or user.is_superuser:
+            return True
+
         if request.method in permissions.SAFE_METHODS:
-            return request.user.is_authenticated
+            return obj == user
 
         if request.method == 'DELETE':
-            return (request.user.is_staff or request.user.is_admin or
-                    request.user.is_superuser)
+            return False
 
-        return (request.user.is_staff or request.user.is_admin or
-                request.user.is_superuser or obj == request.user)
+        return obj == user

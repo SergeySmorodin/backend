@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from django.conf import settings
@@ -60,6 +61,13 @@ def admin_user():
 
 
 @pytest.fixture
+def non_existent_user():
+    """Фикстура для несуществующего user"""
+    user = MagicMock(pk=9999)
+    return user
+
+
+@pytest.fixture
 def auth_client(api_client, regular_user):
     """Авторизованный клиент"""
 
@@ -90,28 +98,3 @@ def admin_token(admin_user):
     token, created = Token.objects.get_or_create(user=admin_user)
     return token
 
-
-@pytest.fixture
-def test_file():
-    """Фикстура для тестового файла"""
-
-    file_content = b"Test file content"
-    test_file = SimpleUploadedFile(
-        "test.txt",
-        file_content,
-        content_type="text/plain"
-    )
-    return test_file
-
-
-@pytest.fixture
-def test_image():
-    """Фикстура для тестового изображения"""
-
-    file_content = b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
-    test_image = SimpleUploadedFile(
-        "test.gif",
-        file_content,
-        content_type="image/gif"
-    )
-    return test_image

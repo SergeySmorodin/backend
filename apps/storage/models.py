@@ -33,7 +33,7 @@ class UserFile(models.Model):
         blank=True
     )
     comment = models.TextField("Комментарий", blank=True, default="")
-    file_path = models.CharField("Путь к файлу", max_length=512)
+    file_path = models.CharField("Путь к файлу", max_length=512, unique=True)
 
     share_token = models.CharField(
         "Токен для доступа",

@@ -62,7 +62,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserFile
-        fields = ['file', 'comment']
+        fields = ['file', 'id', 'original_name', 'size', 'comment']
         extra_kwargs = {
             'comment': {'required': False, 'allow_blank': True}
         }

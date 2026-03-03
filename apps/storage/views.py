@@ -162,18 +162,28 @@ class FileViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         try:
-            file_obj = self.get_object()
-            file_path = file_obj.full_path
+
+            instance = self.get_object()
+
+            # Проверяем права на объект
+            self.check_object_permissions(self.request, instance)
+
+            file_path = instance.full_path
             file_dir = os.path.dirname(file_path)
 
-            file_obj.delete()
+            # Выполняем удаление
+            self.perform_destroy(instance)
 
             # Удаление пустых директорий
             self._remove_empty_dirs(file_dir)
 
-            logger.info(f"Файл {file_obj.id} удален пользователем {request.user.id}")
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+        except Http404:
+            return Response(
+                {"error": "Файл не найден"},
+                status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             logger.error(f"Ошибка при удалении файла: {str(e)}")
             return Response(
@@ -182,16 +192,20 @@ class FileViewSet(viewsets.ModelViewSet):
             )
 
     def _remove_empty_dirs(self, current_dir):
-        """Рекурсивное удаление пустых директорий"""
+        """Рекурсивное удаление пустых директорий, но не трогаем корневую"""
 
         media_root = settings.MEDIA_ROOT
         current_dir = os.path.abspath(current_dir)
         media_root = os.path.abspath(media_root)
 
+        # Корневая директория пользователя - защищена от удаления
+        user_storage_root = os.path.join(media_root, "user_files")
+
         if not current_dir.startswith(media_root):
             return
 
-        while current_dir != media_root:
+        # Удаляем только поддиректории, но не доходим до user_storage_root
+        while current_dir != media_root and current_dir != user_storage_root:
             try:
                 if not os.listdir(current_dir):
                     os.rmdir(current_dir)
@@ -209,9 +223,9 @@ class FileShareDownloadViewSet(viewsets.ViewSet):
 
     permission_classes = [permissions.AllowAny]
 
-    def retrieve(self, request, share_token=None):
+    def retrieve(self, request, share_link=None):
         try:
-            file_obj = get_object_or_404(UserFile, share_token=share_token)
+            file_obj = get_object_or_404(UserFile, share_token=share_link.hex)
 
             if request.query_params.get('info') == 'true':
                 serializer = FileShareSerializer(file_obj, context={'request': request})

@@ -18,20 +18,13 @@ class UserFile(models.Model):
     """Модель файла пользователя"""
 
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="files",
-        verbose_name="Владелец"
+        User, on_delete=models.CASCADE, related_name="files", verbose_name="Владелец"
     )
 
     original_name = models.CharField("Оригинальное имя", max_length=255)
     size = models.BigIntegerField("Размер файла", default=0)
     upload_date = models.DateTimeField("Дата загрузки", auto_now_add=True)
-    last_download = models.DateTimeField(
-        "Последнее скачивание",
-        null=True,
-        blank=True
-    )
+    last_download = models.DateTimeField("Последнее скачивание", null=True, blank=True)
     comment = models.TextField("Комментарий", blank=True, default="")
     file_path = models.CharField("Путь к файлу", max_length=512, unique=True)
 
@@ -41,12 +34,10 @@ class UserFile(models.Model):
         unique=True,
         null=True,
         blank=True,
-        db_index=True
+        db_index=True,
     )
     share_token_created = models.DateTimeField(
-        "Дата создания токена",
-        null=True,
-        blank=True
+        "Дата создания токена", null=True, blank=True
     )
 
     class Meta:
@@ -55,8 +46,8 @@ class UserFile(models.Model):
         verbose_name_plural = "Файлы"
         ordering = ["-upload_date"]
         indexes = [
-            models.Index(fields=['user', '-upload_date']),
-            models.Index(fields=['share_token']),
+            models.Index(fields=["user", "-upload_date"]),
+            models.Index(fields=["share_token"]),
         ]
 
     def save(self, *args, **kwargs):
@@ -80,7 +71,7 @@ class UserFile(models.Model):
     def size_display(self):
         """Форматирование размера файла для отображения"""
         size = self.size
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size < 1024.0:
                 return f"{size:.1f} {unit}"
             size /= 1024.0

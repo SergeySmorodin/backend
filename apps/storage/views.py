@@ -16,7 +16,7 @@ from .serializers import (
     FileListSerializer,
     FileUploadSerializer,
     FileUpdateSerializer,
-    FileShareSerializer
+    FileShareSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,18 +28,18 @@ class FileViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             return FileUploadSerializer
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ["update", "partial_update"]:
             return FileUpdateSerializer
-        elif self.action == 'share':
+        elif self.action == "share":
             return FileShareSerializer
         return FileListSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-        target_user_id = self.request.query_params.get('user_id')
+        target_user_id = self.request.query_params.get("user_id")
 
         # Администратор может видеть файлы любого пользователя
         if user.is_admin and target_user_id:
@@ -48,13 +48,13 @@ class FileViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=user)
 
         logger.info(f"Получен список файлов для пользователя {user.id}")
-        return queryset.select_related('user')
+        return queryset.select_related("user")
 
     def perform_create(self, serializer):
 
         serializer.save()
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def download(self, request, pk=None):
         try:
             file_obj = self.get_object()
@@ -66,9 +66,9 @@ class FileViewSet(viewsets.ModelViewSet):
             file_obj.update_download_date()
 
             response = FileResponse(
-                open(file_obj.full_path, 'rb'),
+                open(file_obj.full_path, "rb"),
                 as_attachment=True,
-                filename=file_obj.original_name
+                filename=file_obj.original_name,
             )
 
             logger.info(f"Файл {file_obj.id} скачан пользователем {request.user.id}")
@@ -76,17 +76,16 @@ class FileViewSet(viewsets.ModelViewSet):
 
         except Http404:
             return Response(
-                {"error": "Файл не найден"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Файл не найден"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             logger.error(f"Ошибка при скачивании файла: {str(e)}")
             return Response(
                 {"error": "Не удалось загрузить файл"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def view(self, request, pk=None):
         try:
             file_obj = self.get_object()
@@ -97,29 +96,29 @@ class FileViewSet(viewsets.ModelViewSet):
             # Определение MIME-типа
             content_type, _ = mimetypes.guess_type(file_obj.original_name)
             if not content_type:
-                content_type = 'application/octet-stream'
+                content_type = "application/octet-stream"
 
             response = FileResponse(
-                open(file_obj.full_path, 'rb'),
-                content_type=content_type
+                open(file_obj.full_path, "rb"), content_type=content_type
             )
-            response['Content-Disposition'] = f'inline; filename="{file_obj.original_name}"'
+            response["Content-Disposition"] = (
+                f'inline; filename="{file_obj.original_name}"'
+            )
 
             return response
 
         except Http404:
             return Response(
-                {"error": "Файл не найден"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Файл не найден"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             logger.error(f"Ошибка при просмотре файла: {str(e)}")
             return Response(
                 {"error": "Не удалось просмотреть файл"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def share(self, request, pk=None):
         """Создание или обновление ссылки для общего доступа"""
         try:
@@ -129,7 +128,9 @@ class FileViewSet(viewsets.ModelViewSet):
             file_obj.regenerate_share_token()
 
             serializer = self.get_serializer(file_obj)
-            logger.info(f"Создана ссылка для файла {file_obj.id} пользователем {request.user.id}")
+            logger.info(
+                f"Создана ссылка для файла {file_obj.id} пользователем {request.user.id}"
+            )
 
             return Response(serializer.data)
 
@@ -137,10 +138,10 @@ class FileViewSet(viewsets.ModelViewSet):
             logger.error(f"Ошибка при создании ссылки: {str(e)}")
             return Response(
                 {"error": "Не удалось создать ссылку"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @action(detail=True, methods=['delete'])
+    @action(detail=True, methods=["delete"])
     def revoke_share(self, request, pk=None):
         """Отзыв ссылки для общего доступа"""
 
@@ -148,7 +149,7 @@ class FileViewSet(viewsets.ModelViewSet):
             file_obj = self.get_object()
             file_obj.share_token = None
             file_obj.share_token_created = None
-            file_obj.save(update_fields=['share_token', 'share_token_created'])
+            file_obj.save(update_fields=["share_token", "share_token_created"])
 
             logger.info(f"Отозвана ссылка для файла {file_obj.id}")
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -157,7 +158,7 @@ class FileViewSet(viewsets.ModelViewSet):
             logger.error(f"Ошибка при отзыве ссылки: {str(e)}")
             return Response(
                 {"error": "Не удалось отозвать ссылку"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
     def destroy(self, request, *args, **kwargs):
@@ -181,14 +182,13 @@ class FileViewSet(viewsets.ModelViewSet):
 
         except Http404:
             return Response(
-                {"error": "Файл не найден"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Файл не найден"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             logger.error(f"Ошибка при удалении файла: {str(e)}")
             return Response(
                 {"error": "Не удалось удалить файл"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     def _remove_empty_dirs(self, current_dir):
@@ -227,8 +227,8 @@ class FileShareDownloadViewSet(viewsets.ViewSet):
         try:
             file_obj = get_object_or_404(UserFile, share_token=share_link.hex)
 
-            if request.query_params.get('info') == 'true':
-                serializer = FileShareSerializer(file_obj, context={'request': request})
+            if request.query_params.get("info") == "true":
+                serializer = FileShareSerializer(file_obj, context={"request": request})
                 return Response(serializer.data)
 
             if not file_obj.exists:
@@ -237,9 +237,9 @@ class FileShareDownloadViewSet(viewsets.ViewSet):
             file_obj.update_download_date()
 
             response = FileResponse(
-                open(file_obj.full_path, 'rb'),
+                open(file_obj.full_path, "rb"),
                 as_attachment=True,
-                filename=file_obj.original_name
+                filename=file_obj.original_name,
             )
 
             logger.info(f"Файл {file_obj.id} скачан по публичной ссылке")
@@ -247,12 +247,11 @@ class FileShareDownloadViewSet(viewsets.ViewSet):
 
         except UserFile.DoesNotExist:
             return Response(
-                {"error": "Ссылка недействительна"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Ссылка недействительна"}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
             logger.error(f"Ошибка при скачивании по ссылке: {str(e)}")
             return Response(
                 {"error": "Не удалось загрузить файл"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

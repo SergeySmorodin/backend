@@ -9,7 +9,10 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from tests.config.data_factories.fake_users_factory import RegularUserFactory, AdminUserFactory
+from tests.config.data_factories.fake_users_factory import (
+    RegularUserFactory,
+    AdminUserFactory,
+)
 
 User = get_user_model()
 
@@ -23,7 +26,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(scope='function', autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def temp_media_root():
     """Создает временную медиа-директорию для всех тестов"""
 
@@ -33,7 +36,7 @@ def temp_media_root():
     print(f"Тестовая директория: {temp_dir}")
     _ORIGINAL_MEDIA_ROOT = settings.MEDIA_ROOT
 
-    if hasattr(_ORIGINAL_MEDIA_ROOT, 'joinpath'):
+    if hasattr(_ORIGINAL_MEDIA_ROOT, "joinpath"):
         settings.MEDIA_ROOT = Path(temp_dir)
     else:
         settings.MEDIA_ROOT = temp_dir

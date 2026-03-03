@@ -18,15 +18,17 @@ class BaseTestAPI:
         """Проверка статус-кода ответа"""
 
         if isinstance(expected_status, (list, tuple)):
-            assert response.status_code in expected_status, \
-                message or (f"Ожидался один из статусов {expected_status}, "
-                            f"получен {response.status_code}. "
-                            f"Ответ: {response.content.decode('utf-8')}")
+            assert response.status_code in expected_status, message or (
+                f"Ожидался один из статусов {expected_status}, "
+                f"получен {response.status_code}. "
+                f"Ответ: {response.content.decode('utf-8')}"
+            )
         else:
-            assert response.status_code == expected_status, \
-                message or (f"Ожидался статус {expected_status}, "
-                            f"получен {response.status_code}. "
-                            f"Ответ: {response.content.decode('utf-8')}")
+            assert response.status_code == expected_status, message or (
+                f"Ожидался статус {expected_status}, "
+                f"получен {response.status_code}. "
+                f"Ответ: {response.content.decode('utf-8')}"
+            )
 
     def assert_response_has_fields(self, response_data, expected_fields):
         """
@@ -37,8 +39,9 @@ class BaseTestAPI:
             expected_fields: Список ожидаемых полей
         """
         for field in expected_fields:
-            assert field in response_data, \
-                f"Поле '{field}' отсутствует в ответе. Доступные поля: {list(response_data.keys())}"
+            assert (
+                field in response_data
+            ), f"Поле '{field}' отсутствует в ответе. Доступные поля: {list(response_data.keys())}"
 
     def assert_response_equals(self, response, expected_data, ignore_fields=None):
         """
@@ -49,14 +52,19 @@ class BaseTestAPI:
             expected_data: Ожидаемые данные
             ignore_fields: Поля для игнорирования при сравнении
         """
-        response_data = response.data if hasattr(response, 'data') else response
+        response_data = response.data if hasattr(response, "data") else response
 
         if ignore_fields:
-            response_data = {k: v for k, v in response_data.items() if k not in ignore_fields}
-            expected_data = {k: v for k, v in expected_data.items() if k not in ignore_fields}
+            response_data = {
+                k: v for k, v in response_data.items() if k not in ignore_fields
+            }
+            expected_data = {
+                k: v for k, v in expected_data.items() if k not in ignore_fields
+            }
 
-        assert response_data == expected_data, \
-            f"Данные не совпадают.\nОжидалось: {expected_data}\nПолучено: {response_data}"
+        assert (
+            response_data == expected_data
+        ), f"Данные не совпадают.\nОжидалось: {expected_data}\nПолучено: {response_data}"
 
     # ================== Проверки пользователей ==================
 
@@ -70,17 +78,18 @@ class BaseTestAPI:
             fields_to_check: Список полей для проверки (по умолчанию: id, username, email)
         """
         if fields_to_check is None:
-            fields_to_check = ['id', 'username', 'email']
+            fields_to_check = ["id", "username", "email"]
 
-        if hasattr(user, 'refresh_from_db'):
+        if hasattr(user, "refresh_from_db"):
             user.refresh_from_db()
 
         for field in fields_to_check:
             if field in response_data and hasattr(user, field):
                 expected_value = getattr(user, field)
                 actual_value = response_data[field]
-                assert actual_value == expected_value, \
-                    f"Поле '{field}': ожидалось '{expected_value}', получено '{actual_value}'"
+                assert (
+                    actual_value == expected_value
+                ), f"Поле '{field}': ожидалось '{expected_value}', получено '{actual_value}'"
 
     def assert_user_created(self, response, expected_data):
         """
@@ -91,13 +100,17 @@ class BaseTestAPI:
             expected_data: Ожидаемые данные пользователя
         """
         self.assert_status(response, status.HTTP_201_CREATED)
-        self.assert_response_has_fields(response.data, ['id', 'username', 'email'])
+        self.assert_response_has_fields(response.data, ["id", "username", "email"])
         self.assert_user_data(response.data, expected_data)
 
     # ================== Проверки прав доступа ==================
 
-    def assert_permission_denied(self, response, expected_status=status.HTTP_403_FORBIDDEN,
-                                 check_error_message=False):
+    def assert_permission_denied(
+        self,
+        response,
+        expected_status=status.HTTP_403_FORBIDDEN,
+        check_error_message=False,
+    ):
         """
         Проверка отказа в доступе
 
@@ -110,8 +123,10 @@ class BaseTestAPI:
 
         if check_error_message and response.data:
             error_text = self._extract_error_text(response.data)
-            assert any(word in error_text.lower() for word in ['доступ', 'прав', 'permission', 'denied']), \
-                f"Ответ не содержит сообщение об отказе в доступе: {error_text}"
+            assert any(
+                word in error_text.lower()
+                for word in ["доступ", "прав", "permission", "denied"]
+            ), f"Ответ не содержит сообщение об отказе в доступе: {error_text}"
 
     def assert_unauthorized(self, response):
         """
@@ -134,8 +149,9 @@ class BaseTestAPI:
         """
         self.assert_status(response, status.HTTP_200_OK)
         if expected_data is not None:
-            assert response.data == expected_data, \
-                f"Полученные данные не совпадают с ожидаемыми"
+            assert (
+                response.data == expected_data
+            ), f"Полученные данные не совпадают с ожидаемыми"
 
     def assert_create_success(self, response, expected_data=None):
         """
@@ -149,8 +165,9 @@ class BaseTestAPI:
         if expected_data:
             self.assert_response_equals(response, expected_data)
 
-    def assert_update_success(self, response, updated_data, obj, fields_to_check=None,
-                              expected_status=None):
+    def assert_update_success(
+        self, response, updated_data, obj, fields_to_check=None, expected_status=None
+    ):
         """
         Проверка успешного обновления (PUT/PATCH)
 
@@ -166,7 +183,7 @@ class BaseTestAPI:
 
         self.assert_status(response, expected_status)
 
-        if hasattr(obj, 'refresh_from_db'):
+        if hasattr(obj, "refresh_from_db"):
             obj.refresh_from_db()
 
         if fields_to_check is None:
@@ -176,8 +193,9 @@ class BaseTestAPI:
             if field in updated_data:
                 expected_value = updated_data[field]
                 actual_value = getattr(obj, field)
-                assert actual_value == expected_value, \
-                    f"Поле '{field}': ожидалось '{expected_value}', получено '{actual_value}'"
+                assert (
+                    actual_value == expected_value
+                ), f"Поле '{field}': ожидалось '{expected_value}', получено '{actual_value}'"
 
     def assert_delete_success(self, response, obj_id, model=None):
         """
@@ -191,13 +209,15 @@ class BaseTestAPI:
         self.assert_status(response, status.HTTP_204_NO_CONTENT)
 
         if model:
-            assert not model.objects.filter(id=obj_id).exists(), \
-                f"Объект с id {obj_id} все еще существует в БД"
+            assert not model.objects.filter(
+                id=obj_id
+            ).exists(), f"Объект с id {obj_id} все еще существует в БД"
 
     # ================== Проверки ошибок ==================
 
-    def assert_error_response(self, response, expected_status, expected_field=None,
-                              expected_message=None):
+    def assert_error_response(
+        self, response, expected_status, expected_field=None, expected_message=None
+    ):
         """
         Универсальная проверка ответа с ошибкой
 
@@ -211,13 +231,15 @@ class BaseTestAPI:
 
         if expected_field and response.data:
             if isinstance(response.data, dict):
-                assert expected_field in response.data, \
-                    f"Поле '{expected_field}' отсутствует в ответе. Доступные поля: {list(response.data.keys())}"
+                assert (
+                    expected_field in response.data
+                ), f"Поле '{expected_field}' отсутствует в ответе. Доступные поля: {list(response.data.keys())}"
 
         if expected_message and response.data:
             error_text = self._extract_error_text(response.data)
-            assert expected_message.lower() in error_text.lower(), \
-                f"Сообщение '{expected_message}' не найдено в ответе: {error_text}"
+            assert (
+                expected_message.lower() in error_text.lower()
+            ), f"Сообщение '{expected_message}' не найдено в ответе: {error_text}"
 
     def assert_validation_error(self, response, field=None):
         """
@@ -227,7 +249,9 @@ class BaseTestAPI:
             response: HTTP ответ
             field: Поле с ошибкой валидации
         """
-        self.assert_error_response(response, status.HTTP_400_BAD_REQUEST, expected_field=field)
+        self.assert_error_response(
+            response, status.HTTP_400_BAD_REQUEST, expected_field=field
+        )
 
     def assert_not_found(self, response):
         """
@@ -266,4 +290,4 @@ class BaseTestAPI:
             for item in data:
                 error_messages.append(str(item))
 
-        return ' '.join(filter(None, error_messages))
+        return " ".join(filter(None, error_messages))

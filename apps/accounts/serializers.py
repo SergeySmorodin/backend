@@ -25,7 +25,13 @@ class UserSerializer(serializers.ModelSerializer):
             "last_login",
             "is_active",
         ]
-        read_only_fields = ["id", "storage_path", "date_joined", "last_login", "is_active"]
+        read_only_fields = [
+            "id",
+            "storage_path",
+            "date_joined",
+            "last_login",
+            "is_active",
+        ]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -36,18 +42,22 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(
-            queryset=User.objects.all(),
-            message="Пользователь с таким email уже существует"
-        )]
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Пользователь с таким email уже существует",
+            )
+        ],
     )
 
     username = serializers.CharField(
         required=True,
-        validators=[UniqueValidator(
-            queryset=User.objects.all(),
-            message="Пользователь с таким username уже существует"
-        )]
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Пользователь с таким username уже существует",
+            )
+        ],
     )
 
     class Meta:
@@ -56,9 +66,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password2"]:
-            raise serializers.ValidationError({
-                "password": "Пароли не совпадают"
-            })
+            raise serializers.ValidationError({"password": "Пароли не совпадают"})
         return attrs
 
     def create(self, validated_data):
@@ -117,14 +125,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     is_admin = serializers.BooleanField(required=False)
     password = serializers.CharField(
-        write_only=True,
-        required=False,
-        style={"input_type": "password"}
+        write_only=True, required=False, style={"input_type": "password"}
     )
     password2 = serializers.CharField(
-        write_only=True,
-        required=False,
-        style={"input_type": "password"}
+        write_only=True, required=False, style={"input_type": "password"}
     )
 
     class Meta:
@@ -143,9 +147,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         if password or password2:
             if password != password2:
-                raise serializers.ValidationError({
-                    "password": "Пароли не совпадают"
-                })
+                raise serializers.ValidationError({"password": "Пароли не совпадают"})
         return attrs
 
     def validate_email(self, value):
@@ -172,8 +174,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     def validate_is_admin(self, value):
         """Только админы могут менять is_admin"""
-        request = self.context.get('request')
-        if request and not (request.user.is_staff or request.user.is_admin or request.user.is_superuser):
+        request = self.context.get("request")
+        if request and not (
+            request.user.is_staff or request.user.is_admin or request.user.is_superuser
+        ):
             if self.instance and self.instance.is_admin != value:
                 raise serializers.ValidationError(
                     "Только администратор может изменять права администратора"

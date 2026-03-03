@@ -13,14 +13,14 @@ def validate_file_extension(value):
     """
     Валидация расширения файла
     """
-    allowed_extensions = settings.STORAGE_SETTINGS.get('ALLOWED_EXTENSIONS', [])
+    allowed_extensions = settings.STORAGE_SETTINGS.get("ALLOWED_EXTENSIONS", [])
 
     if not allowed_extensions:
         return value
 
     ext = os.path.splitext(value.name)[1].lower()
     if ext not in allowed_extensions:
-        allowed_ext_str = ', '.join(allowed_extensions)
+        allowed_ext_str = ", ".join(allowed_extensions)
         raise ValidationError(
             f"Недопустимое расширение файла: {ext}. "
             f"Разрешенные расширения: {allowed_ext_str}"
@@ -34,7 +34,9 @@ def validate_file_size(value):
     """
     Валидация размера файла
     """
-    max_size = settings.STORAGE_SETTINGS.get('MAX_FILE_SIZE', 100 * 1024 * 1024)  # 100 MB по умолчанию
+    max_size = settings.STORAGE_SETTINGS.get(
+        "MAX_FILE_SIZE", 100 * 1024 * 1024
+    )  # 100 MB по умолчанию
 
     if value.size > max_size:
         max_size_mb = max_size / 1024 / 1024
@@ -79,14 +81,19 @@ def validate_file_content_type(value):
 
         mime = magic.from_buffer(file_start, mime=True)
 
-        allowed_mime_types = settings.STORAGE_SETTINGS.get('ALLOWED_MIME_TYPES', [
-            'image/jpeg', 'image/png', 'image/gif',
-            'application/pdf',
-            'text/plain',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/zip'
-        ])
+        allowed_mime_types = settings.STORAGE_SETTINGS.get(
+            "ALLOWED_MIME_TYPES",
+            [
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "application/pdf",
+                "text/plain",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/zip",
+            ],
+        )
 
         if mime not in allowed_mime_types:
             raise ValidationError(f"Недопустимый MIME-тип файла: {mime}")
@@ -109,12 +116,13 @@ def validate_unique_filename(user, filename):
     if UserFile.objects.filter(user=user, original_name=filename).exists():
         counter = 1
         while UserFile.objects.filter(
-                user=user,
-                original_name=f"{base}_{counter:03}{ext}"
+            user=user, original_name=f"{base}_{counter:03}{ext}"
         ).exists():
             counter += 1
         new_filename = f"{base}_{counter:03}{ext}"
-        logger.info(f"Имя файла изменено с {filename} на {new_filename} (конфликт имен)")
+        logger.info(
+            f"Имя файла изменено с {filename} на {new_filename} (конфликт имен)"
+        )
         return new_filename
 
     return filename

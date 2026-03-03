@@ -27,30 +27,32 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Выбор сериализатора в зависимости от действия"""
-        if self.action == 'create':
+        if self.action == "create":
             return UserCreateSerializer
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ["update", "partial_update"]:
             return UserUpdateSerializer
-        elif self.action == 'list':
+        elif self.action == "list":
             return UserListSerializer
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             return UserSerializer
-        elif self.action == 'me':
+        elif self.action == "me":
             return UserSerializer
         return UserSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['request'] = self.request
+        context["request"] = self.request
         return context
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated]
+    )
     def me(self, request):
         """Информация о текущем пользователе"""
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    @action(detail=False, methods=["post"], permission_classes=[permissions.AllowAny])
     def register(self, request):
         """Регистрация нового пользователя"""
         serializer = UserCreateSerializer(data=request.data)
@@ -58,13 +60,16 @@ class UserViewSet(viewsets.ModelViewSet):
         user = serializer.save()
         token, _ = Token.objects.get_or_create(user=user)
 
-        return Response({
-            "user": UserSerializer(user).data,
-            "token": token.key,
-            "message": "Регистрация прошла успешно",
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "token": token.key,
+                "message": "Регистрация прошла успешно",
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    @action(detail=False, methods=["post"], permission_classes=[permissions.AllowAny])
     def login(self, request):
         """Вход в систему"""
         serializer = UserLoginSerializer(data=request.data)
@@ -73,17 +78,22 @@ class UserViewSet(viewsets.ModelViewSet):
         login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
 
-        return Response({
-            "user": UserSerializer(user).data,
-            "token": token.key,
-            "message": "Вход выполнен успешно",
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "token": token.key,
+                "message": "Вход выполнен успешно",
+            },
+            status=status.HTTP_200_OK,
+        )
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
+    )
     def logout(self, request):
         """Выход из системы"""
         try:
-            if hasattr(request.user, 'auth_token'):
+            if hasattr(request.user, "auth_token"):
                 request.user.auth_token.delete()
             logout(request)
             return Response({"message": "Выход выполнен успешно"})
@@ -91,7 +101,7 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.error(f"Ошибка при выходе: {str(e)}")
             return Response(
                 {"error": "Ошибка при выходе из системы"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     def destroy(self, request, *args, **kwargs):
@@ -100,6 +110,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if user == request.user:
             return Response(
                 {"error": "Нельзя удалить самого себя"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         return super().destroy(request, *args, **kwargs)

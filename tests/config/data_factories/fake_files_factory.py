@@ -28,7 +28,9 @@ class UserFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserFile
 
-    user = factory.SubFactory('tests.config.data_factories.fake_users_factory.RegularUserFactory')
+    user = factory.SubFactory(
+        "tests.config.data_factories.fake_users_factory.RegularUserFactory"
+    )
     original_name = factory.LazyAttribute(lambda _: fake.file_name())
     comment = factory.LazyAttribute(lambda _: fake.sentence())
 
@@ -36,7 +38,9 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         lambda o: os.path.join(o.user.storage_path, o.original_name)
     )
 
-    size = factory.LazyAttribute(lambda _: fake.random_int(min=1024, max=10 * 1024 * 1024))
+    size = factory.LazyAttribute(
+        lambda _: fake.random_int(min=1024, max=10 * 1024 * 1024)
+    )
 
     @factory.post_generation
     def create_file(self, create, extracted, **kwargs):
@@ -53,16 +57,16 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         content = None
         file_ext = os.path.splitext(self.original_name)[1].lower()
 
-        force_type = kwargs.get('_file_type', kwargs.get('file_type'))
+        force_type = kwargs.get("_file_type", kwargs.get("file_type"))
 
         if isinstance(extracted, bytes):
             content = extracted
         elif isinstance(extracted, str):
-            content = extracted.encode('utf-8')
+            content = extracted.encode("utf-8")
         elif isinstance(extracted, dict):
-            raw_content = extracted.get('content')
+            raw_content = extracted.get("content")
             if isinstance(raw_content, str):
-                content = raw_content.encode('utf-8')
+                content = raw_content.encode("utf-8")
             elif isinstance(raw_content, bytes):
                 content = raw_content
 
@@ -70,25 +74,25 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         if content is None:
             target_type = force_type
             if not target_type:
-                if file_ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                    target_type = 'image'
-                elif file_ext == '.pdf':
-                    target_type = 'pdf'
+                if file_ext in [".jpg", ".jpeg", ".png", ".gif"]:
+                    target_type = "image"
+                elif file_ext == ".pdf":
+                    target_type = "pdf"
                 else:
-                    target_type = 'text'
+                    target_type = "text"
 
-            if target_type == 'image':
-                img = PILImage.new('RGB', (100, 100), color='red')
+            if target_type == "image":
+                img = PILImage.new("RGB", (100, 100), color="red")
                 buffer = io.BytesIO()
-                img.save(buffer, format='JPEG')
+                img.save(buffer, format="JPEG")
                 content = buffer.getvalue()
-            elif target_type == 'pdf':
+            elif target_type == "pdf":
                 content = b"%PDF-1.4\n%Fake PDF Content\n"
             else:
-                content = fake.text().encode('utf-8')
+                content = fake.text().encode("utf-8")
 
         # Записываем файл
-        with open(full_path, 'wb') as f:
+        with open(full_path, "wb") as f:
             f.write(content)
 
         #  Обновляем размер в БД
@@ -107,63 +111,53 @@ def test_file_factory():
         binary_file = test_file_factory('binary', filename='data.bin', size_kb=5)
     """
 
-    def _make_file(file_type='text', filename=None, **kwargs):
+    def _make_file(file_type="text", filename=None, **kwargs):
         if filename is None:
             filename = fake.file_name()
 
-        if file_type == 'text':
-            content = kwargs.get('content', fake.text())
+        if file_type == "text":
+            content = kwargs.get("content", fake.text())
             if isinstance(content, str):
-                content = content.encode('utf-8')
+                content = content.encode("utf-8")
             return SimpleUploadedFile(
-                filename,
-                content,
-                content_type=kwargs.get('content_type', 'text/plain')
+                filename, content, content_type=kwargs.get("content_type", "text/plain")
             )
 
-        elif file_type == 'image':
-            size = kwargs.get('size', (100, 100))
-            color = kwargs.get('color', 'red')
-            img_format = kwargs.get('format', 'JPEG')
+        elif file_type == "image":
+            size = kwargs.get("size", (100, 100))
+            color = kwargs.get("color", "red")
+            img_format = kwargs.get("format", "JPEG")
 
-            image = PILImage.new('RGB', size, color=color)
+            image = PILImage.new("RGB", size, color=color)
             img_io = io.BytesIO()
             image.save(img_io, format=img_format)
 
             return SimpleUploadedFile(
-                filename,
-                img_io.getvalue(),
-                content_type=f'image/{img_format.lower()}'
+                filename, img_io.getvalue(), content_type=f"image/{img_format.lower()}"
             )
 
-        elif file_type == 'pdf':
-            content = kwargs.get('content', b'%PDF-1.4\n%PDF content\n')
-            return SimpleUploadedFile(
-                filename,
-                content,
-                content_type='application/pdf'
-            )
+        elif file_type == "pdf":
+            content = kwargs.get("content", b"%PDF-1.4\n%PDF content\n")
+            return SimpleUploadedFile(filename, content, content_type="application/pdf")
 
-        elif file_type == 'binary':
-            size_kb = kwargs.get('size_kb', 10)
+        elif file_type == "binary":
+            size_kb = kwargs.get("size_kb", 10)
             content = os.urandom(size_kb * 1024)
             return SimpleUploadedFile(
-                filename,
-                content,
-                content_type='application/octet-stream'
+                filename, content, content_type="application/octet-stream"
             )
 
         # по расширению
         else:
             ext = os.path.splitext(filename)[1].lower()
-            content = kwargs.get('content', fake.text())
+            content = kwargs.get("content", fake.text())
 
-            if ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                file_type = 'image'
-            elif ext == '.pdf':
-                file_type = 'pdf'
+            if ext in [".jpg", ".jpeg", ".png", ".gif"]:
+                file_type = "image"
+            elif ext == ".pdf":
+                file_type = "pdf"
             else:
-                file_type = 'text'
+                file_type = "text"
 
             return _make_file(file_type, filename, content=content, **kwargs)
 
@@ -173,16 +167,16 @@ def test_file_factory():
 @pytest.fixture
 def text_file(test_file_factory):
     """Фикстура для текстового файла"""
-    return test_file_factory('text', filename='test.txt', content='Test content')
+    return test_file_factory("text", filename="test.txt", content="Test content")
 
 
 @pytest.fixture
 def image_file(test_file_factory):
     """Фикстура для изображения"""
-    return test_file_factory('image', filename='test.jpg', size=(100, 100))
+    return test_file_factory("image", filename="test.jpg", size=(100, 100))
 
 
 @pytest.fixture
 def pdf_file(test_file_factory):
     """Фикстура для PDF файла"""
-    return test_file_factory('pdf', filename='test.pdf')
+    return test_file_factory("pdf", filename="test.pdf")

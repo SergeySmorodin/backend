@@ -23,7 +23,7 @@ class IsAdminOrSelf(permissions.BasePermission):
         user = request.user
 
         # Определяем владельца объекта
-        if hasattr(obj, 'user'):
+        if hasattr(obj, "user"):
             is_owner = obj.user == user
         else:
             is_owner = obj == user

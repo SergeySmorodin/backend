@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def storage_url():
-    """GET POST"""
+    """GET POST /api/storage/"""
     return f'/api/storage/'
 
 
@@ -29,6 +29,8 @@ def storage_download_url(storage_url):
 
 @pytest.fixture
 def storage_view_url(storage_url):
+    """GET /api/storage/{file.id}/view/"""
+
     def _url(file):
         return f'{storage_url}{file.id}/view/'
 
@@ -37,6 +39,8 @@ def storage_view_url(storage_url):
 
 @pytest.fixture
 def storage_share_url(storage_url):
+    """POST /api/storage/{file.id}/share/"""
+
     def _url(file):
         return f'{storage_url}{file.id}/share/'
 
@@ -45,6 +49,8 @@ def storage_share_url(storage_url):
 
 @pytest.fixture
 def storage_revoke_share_url(storage_url):
+    """DELETE /api/storage/{file.id}/revoke_share/"""
+
     def _url(file):
         return f'{storage_url}{file.id}/revoke_share/'
 
@@ -53,6 +59,8 @@ def storage_revoke_share_url(storage_url):
 
 @pytest.fixture
 def storage_public_share_url():
+    """GET /api/storage/share/{share_link}/"""
+
     def _url(share_token):
         return f'/api/storage/share/{share_token}/'
 

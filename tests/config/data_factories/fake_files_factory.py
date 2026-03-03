@@ -15,7 +15,7 @@ fake = Faker()
 
 class UserFileFactory(factory.django.DjangoModelFactory):
     """
-    Фабрика для создания тестовых файлов.
+    Фабрика для создания тестовых файлов
 
     Использование:
         file = UserFileFactory()                          # Текстовый файл
@@ -28,7 +28,7 @@ class UserFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserFile
 
-    user = factory.SubFactory('your_app.factories.RegularUserFactory')
+    user = factory.SubFactory('tests.config.data_factories.fake_users_factory.RegularUserFactory')
     original_name = factory.LazyAttribute(lambda _: fake.file_name())
     comment = factory.LazyAttribute(lambda _: fake.sentence())
 
@@ -87,11 +87,11 @@ class UserFileFactory(factory.django.DjangoModelFactory):
             else:
                 content = fake.text().encode('utf-8')
 
-        # === 3. Записываем файл ===
+        # Записываем файл
         with open(full_path, 'wb') as f:
             f.write(content)
 
-        # === 4. Обновляем размер в БД ===
+        #  Обновляем размер в БД
         UserFile.objects.filter(pk=self.pk).update(size=len(content))
 
 

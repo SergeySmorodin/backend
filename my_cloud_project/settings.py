@@ -17,8 +17,15 @@ from dotenv import load_dotenv
 
 from config.general_config import DATABASES, SECRET_KEY, DEBUG, ALLOWED_HOSTS
 from config.logging_config import LOGGING
-from config.my_cloud_config import BASE_DIR, STATIC_URL, STATICFILES_DIRS, STATIC_ROOT, MEDIA_URL, MEDIA_ROOT, \
-    STORAGE_SETTINGS
+from config.my_cloud_config import (
+    BASE_DIR,
+    STATIC_URL,
+    STATICFILES_DIRS,
+    STATIC_ROOT,
+    MEDIA_URL,
+    MEDIA_ROOT,
+    STORAGE_SETTINGS,
+)
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,12 +35,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
-
     "apps.accounts",
     "apps.storage",
 ]
@@ -115,7 +120,7 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.MultiPartParser",
         "rest_framework.parsers.FormParser",
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Настройки CORS
@@ -142,23 +147,23 @@ LOGIN_URL = "/api/accounts/users/login/"
 
 # Настройки Spectacular
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'API DOCS',
-    'DESCRIPTION': 'API для файлового облачного хранилища',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
-    'SCHEMA_PATH_PREFIX': '/api/',
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-        'persistAuthorization': True,
-        'displayOperationId': True,
+    "TITLE": "API DOCS",
+    "DESCRIPTION": "API для файлового облачного хранилища",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": "/api/",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
     },
-    'SECURITY': [
+    "SECURITY": [
         {
-            'Bearer': {
-                'type': 'http',
-                'scheme': 'bearer',
-                'bearerFormat': 'Token',
+            "Bearer": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "Token",
             }
         }
     ],

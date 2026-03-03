@@ -28,7 +28,9 @@ class TestFileAPIPermissions(BaseTestAPI):
         response = api_client.get(storage_url)
         self.assert_status(response, status.HTTP_403_FORBIDDEN)
 
-    def test_authenticated_can_access_own_files(self, auth_client, regular_user, storage_url):
+    def test_authenticated_can_access_own_files(
+        self, auth_client, regular_user, storage_url
+    ):
         """
         Авторизованный пользователь может получить свои файлы
         GET /api/storage/
@@ -40,8 +42,8 @@ class TestFileAPIPermissions(BaseTestAPI):
 
         self.assert_get_success(response)
         assert len(response.data) == 1
-        assert response.data[0]['original_name'] == test_file.original_name
-        assert response.data[0]['owner']['id'] == regular_user.id
+        assert response.data[0]["original_name"] == test_file.original_name
+        assert response.data[0]["owner"]["id"] == regular_user.id
 
     def test_user_cannot_access_others_files(self, auth_client, storage_url):
         """
@@ -84,7 +86,7 @@ class TestFileAPIPermissions(BaseTestAPI):
 
         self.assert_get_success(response)
         assert len(response.data) == 1
-        assert response.data[0]['original_name'] == user1_file.original_name
+        assert response.data[0]["original_name"] == user1_file.original_name
 
 
 @pytest.mark.api
@@ -106,30 +108,30 @@ class TestFileUploadAPI(BaseTestAPI):
         response = auth_client.post(
             storage_url,
             {
-                'file': text_file,
-                'comment': 'Test comment',
-                'original_name': text_file.name,
+                "file": text_file,
+                "comment": "Test comment",
+                "original_name": text_file.name,
             },
-            format='multipart'
+            format="multipart",
         )
 
         expected_data = {
-            'original_name': text_file.name,
-            'size': file_size,
-            'comment': 'Test comment'
+            "original_name": text_file.name,
+            "size": file_size,
+            "comment": "Test comment",
         }
 
         # Проверяем ответ
         self.assert_create_success(response)
-        self.assert_response_equals(response, expected_data, ignore_fields=['id'])
+        self.assert_response_equals(response, expected_data, ignore_fields=["id"])
 
         # Проверяем наличие ID в ответе
         response_data = response.json()
-        assert 'id' in response_data
+        assert "id" in response_data
 
         # Проверяем создание в БД
         assert UserFile.objects.filter(user=regular_user).count() == 1
-        file_obj = UserFile.objects.get(id=response_data['id'])
+        file_obj = UserFile.objects.get(id=response_data["id"])
         assert os.path.exists(file_obj.full_path)
         assert file_obj.user.id == regular_user.id
         assert file_obj.size == file_size
@@ -143,31 +145,33 @@ class TestFileUploadAPI(BaseTestAPI):
         response = auth_client.post(
             storage_url,
             {
-                'file': text_file,
-                'original_name': text_file.name,
+                "file": text_file,
+                "original_name": text_file.name,
             },
-            format='multipart'
+            format="multipart",
         )
 
         self.assert_create_success(response)
-        assert response.data['comment'] == ''
+        assert response.data["comment"] == ""
 
-    def test_upload_file_too_large(self, auth_client, storage_url, settings, test_file_factory):
+    def test_upload_file_too_large(
+        self, auth_client, storage_url, settings, test_file_factory
+    ):
         """
         Тест загрузки слишком большого файла
         POST /api/storage/
         """
 
         # Устанавливаем маленький лимит
-        settings.STORAGE_SETTINGS['MAX_FILE_SIZE'] = 10  # 10 байт
+        settings.STORAGE_SETTINGS["MAX_FILE_SIZE"] = 10  # 10 байт
 
         # Создаем большой файл через фабрику
-        large_file = test_file_factory('binary', filename='large.bin', size_kb=1)  # 1KB > 10 байт
+        large_file = test_file_factory(
+            "binary", filename="large.bin", size_kb=1
+        )  # 1KB > 10 байт
 
         response = auth_client.post(
-            storage_url,
-            {'file': large_file},
-            format='multipart'
+            storage_url, {"file": large_file}, format="multipart"
         )
 
         self.assert_validation_error(response)
@@ -187,11 +191,11 @@ class TestFileUpdateAPI(BaseTestAPI):
         file = UserFileFactory(user=regular_user, comment="Old comment")
 
         url = storage_detail_url(file)
-        data = {'comment': 'New comment'}
+        data = {"comment": "New comment"}
 
-        response = auth_client.patch(url, data, format='multipart')
+        response = auth_client.patch(url, data, format="multipart")
 
-        self.assert_update_success(response, data, file, fields_to_check=['comment'])
+        self.assert_update_success(response, data, file, fields_to_check=["comment"])
 
     def test_rename_file(self, auth_client, regular_user, storage_detail_url):
         """
@@ -201,15 +205,13 @@ class TestFileUpdateAPI(BaseTestAPI):
 
         file = UserFileFactory(user=regular_user, original_name="old_name.txt")
 
-        data = {'original_name': 'new_name.txt'}
+        data = {"original_name": "new_name.txt"}
 
-        response = auth_client.patch(
-            storage_detail_url(file),
-            data,
-            format='multipart'
+        response = auth_client.patch(storage_detail_url(file), data, format="multipart")
+
+        self.assert_update_success(
+            response, data, file, fields_to_check=["original_name"]
         )
-
-        self.assert_update_success(response, data, file, fields_to_check=['original_name'])
 
     def test_cannot_update_others_file(self, auth_client, storage_detail_url):
         """
@@ -221,14 +223,12 @@ class TestFileUpdateAPI(BaseTestAPI):
         file = UserFileFactory(user=another_user)
 
         response = auth_client.patch(
-            storage_detail_url(file),
-            {
-                'comment': 'Hacked comment'
-            },
-            format='multipart'
+            storage_detail_url(file), {"comment": "Hacked comment"}, format="multipart"
         )
 
-        self.assert_permission_denied(response, expected_status=status.HTTP_404_NOT_FOUND)
+        self.assert_permission_denied(
+            response, expected_status=status.HTTP_404_NOT_FOUND
+        )
 
 
 @pytest.mark.api
@@ -245,7 +245,9 @@ class TestFileDeleteAPI(BaseTestAPI):
         file = UserFileFactory(user=regular_user, create_file=True)
 
         # Проверяем, что файл создан
-        assert os.path.exists(file.full_path), f"Файл не создан на диске: {file.full_path}"
+        assert os.path.exists(
+            file.full_path
+        ), f"Файл не создан на диске: {file.full_path}"
 
         url = storage_detail_url(file)
 
@@ -268,7 +270,9 @@ class TestFileDeleteAPI(BaseTestAPI):
         self.assert_delete_success(response, file.id, UserFile)
         assert not os.path.exists(file.full_path)  # Физический файл удален
 
-    def test_delete_file_removes_empty_dirs(self, auth_client, regular_user, storage_detail_url, temp_media_root):
+    def test_delete_file_removes_empty_dirs(
+        self, auth_client, regular_user, storage_detail_url, temp_media_root
+    ):
         """
         Тест удаления пустых директорий при удалении файла
         DELETE /api/storage/{file.id}/
@@ -280,7 +284,7 @@ class TestFileDeleteAPI(BaseTestAPI):
             user=regular_user,
             original_name="test.txt",
             file_path=nested_path,
-            create_file=True
+            create_file=True,
         )
 
         url = storage_detail_url(file)
@@ -289,7 +293,9 @@ class TestFileDeleteAPI(BaseTestAPI):
         self.assert_delete_success(response, file.id, UserFile)
 
         # Проверяем, что вложенные пустые директории удалены
-        assert not os.path.exists(os.path.join(temp_media_root, "user_files", "subdir", "nested"))
+        assert not os.path.exists(
+            os.path.join(temp_media_root, "user_files", "subdir", "nested")
+        )
         assert not os.path.exists(os.path.join(temp_media_root, "user_files", "subdir"))
 
         # Проверяем, что корневая директория user_files существует
@@ -307,7 +313,9 @@ class TestFileDeleteAPI(BaseTestAPI):
         url = storage_detail_url(file)
         response = auth_client.delete(url)
 
-        self.assert_permission_denied(response, expected_status=status.HTTP_404_NOT_FOUND)
+        self.assert_permission_denied(
+            response, expected_status=status.HTTP_404_NOT_FOUND
+        )
         assert UserFile.objects.filter(id=file.id).exists()
         assert os.path.exists(file.full_path)  # Физический файл должен остаться
 
@@ -325,20 +333,25 @@ class TestFileDownloadAPI(BaseTestAPI):
         file = UserFileFactory(
             user=regular_user,
             original_name="test.txt",
-            create_file="test download content"
+            create_file="test download content",
         )
 
         url = storage_download_url(file)
         response = auth_client.get(url)
 
         self.assert_status(response, status.HTTP_200_OK)
-        assert response.headers['Content-Disposition'] == f'attachment; filename="{file.original_name}"'
+        assert (
+            response.headers["Content-Disposition"]
+            == f'attachment; filename="{file.original_name}"'
+        )
 
         # Для FileResponse используем streaming_content
-        content = b''.join(response.streaming_content)
+        content = b"".join(response.streaming_content)
         assert content == b"test download content"
 
-    def test_view_file_inline(self, auth_client, regular_user, storage_view_url, image_file):
+    def test_view_file_inline(
+        self, auth_client, regular_user, storage_view_url, image_file
+    ):
         """
         Тест просмотра файла в браузере
         GET /api/storage/{file.id}/view/
@@ -348,19 +361,19 @@ class TestFileDownloadAPI(BaseTestAPI):
         image_file.seek(0)
 
         file = UserFileFactory(
-            user=regular_user,
-            original_name="test.jpg",
-            create_file=file_content
+            user=regular_user, original_name="test.jpg", create_file=file_content
         )
 
         url = storage_view_url(file)
         response = auth_client.get(url)
 
         self.assert_status(response, status.HTTP_200_OK)
-        assert response.headers['Content-Disposition'].startswith('inline')
-        assert 'image/' in response.headers['Content-Type']
+        assert response.headers["Content-Disposition"].startswith("inline")
+        assert "image/" in response.headers["Content-Type"]
 
-    def test_download_nonexistent_file(self, auth_client, regular_user, storage_download_url):
+    def test_download_nonexistent_file(
+        self, auth_client, regular_user, storage_download_url
+    ):
         """
         Тест скачивания несуществующего файла
         GET /api/storage/{file.id}/download/
@@ -369,14 +382,14 @@ class TestFileDownloadAPI(BaseTestAPI):
         file = UserFileFactory(
             user=regular_user,
             file_path="user_files/nonexistent.txt",
-            create_file=False  # Не создаем физический файл
+            create_file=False,  # Не создаем физический файл
         )
 
         url = storage_download_url(file)
         response = auth_client.get(url)
 
         self.assert_not_found(response)
-        assert "Файл не найден" in response.data['error']
+        assert "Файл не найден" in response.data["error"]
 
 
 @pytest.mark.api
@@ -389,33 +402,29 @@ class TestFileShareAPI(BaseTestAPI):
         Тест создания ссылки для общего доступа
         POST /api/storage/{file.id}/share/
         """
-        file = UserFileFactory(
-            user=regular_user,
-            share_token=None  # Нет токена
-        )
+        file = UserFileFactory(user=regular_user, share_token=None)  # Нет токена
 
         url = storage_share_url(file)
         response = auth_client.post(url)
 
         self.assert_status(response, status.HTTP_200_OK)
-        assert 'share_token' in response.data
-        assert 'share_url' in response.data
-        assert response.data['share_token'] is not None
+        assert "share_token" in response.data
+        assert "share_url" in response.data
+        assert response.data["share_token"] is not None
 
         file.refresh_from_db()
         assert file.share_token is not None
         assert file.share_token_created is not None
 
-    def test_revoke_share_link(self, auth_client, regular_user, storage_revoke_share_url):
+    def test_revoke_share_link(
+        self, auth_client, regular_user, storage_revoke_share_url
+    ):
         """
         Тест отзыва ссылки для общего доступа
         DELETE /api/storage/{file.id}/revoke_share/
         """
 
-        file = UserFileFactory(
-            user=regular_user,
-            share_token="test_token_123"
-        )
+        file = UserFileFactory(user=regular_user, share_token="test_token_123")
 
         url = storage_revoke_share_url(file)
         response = auth_client.delete(url)
@@ -432,10 +441,7 @@ class TestFileShareAPI(BaseTestAPI):
         POST /api/storage/{file.id}/share/ (повторный вызов)
         """
 
-        file = UserFileFactory(
-            user=regular_user,
-            share_token="old_token_123"
-        )
+        file = UserFileFactory(user=regular_user, share_token="old_token_123")
 
         old_token = file.share_token
 
@@ -443,7 +449,7 @@ class TestFileShareAPI(BaseTestAPI):
         response = auth_client.post(url)
 
         self.assert_status(response, status.HTTP_200_OK)
-        assert response.data['share_token'] != old_token
+        assert response.data["share_token"] != old_token
 
         file.refresh_from_db()
         assert file.share_token != old_token
@@ -454,29 +460,29 @@ class TestFileShareAPI(BaseTestAPI):
 class TestPublicShareAPI(BaseTestAPI):
     """Тесты публичного доступа по ссылкам"""
 
-    def test_download_by_share_link(self, api_client, regular_user, storage_public_share_url):
+    def test_download_by_share_link(
+        self, api_client, regular_user, storage_public_share_url
+    ):
         """
         Тест скачивания файла по публичной ссылке
         GET /api/storage/share/{share_token}/
         """
 
-        file = UserFileFactory(
-            user=regular_user,
-            create_file="shared content"
-        )
+        file = UserFileFactory(user=regular_user, create_file="shared content")
 
         # Получаем сгенерированный токен из модели
         share_token = uuid.UUID(file.share_token)
 
-        response = api_client.get(
-            storage_public_share_url(share_token)
-        )
+        response = api_client.get(storage_public_share_url(share_token))
 
         self.assert_status(response, status.HTTP_200_OK)
 
-        content = b''.join(response.streaming_content)
+        content = b"".join(response.streaming_content)
         assert content == b"shared content"
-        assert response.headers['Content-Disposition'] == f'attachment; filename="{file.original_name}"'
+        assert (
+            response.headers["Content-Disposition"]
+            == f'attachment; filename="{file.original_name}"'
+        )
 
     def test_get_share_info(self, api_client, regular_user, storage_public_share_url):
         """
@@ -494,16 +500,19 @@ class TestPublicShareAPI(BaseTestAPI):
         self.assert_status(response, status.HTTP_200_OK)
 
         # Проверяем поля, которые реально возвращает сериализатор
-        expected_fields = ['share_token', 'share_url', 'share_token_created']
+        expected_fields = ["share_token", "share_url", "share_token_created"]
         self.assert_response_has_fields(response.data, expected_fields)
 
         # Проверяем значения
-        assert response.data['share_token'] == file.share_token
+        assert response.data["share_token"] == file.share_token
 
         # Для URL используем hex (без дефисов)
         expected_url_part = file.share_token  # это уже hex без дефисов
-        assert expected_url_part in response.data['share_url']
-        assert response.data['share_url'] == f'http://testserver/api/storage/share/{file.share_token}/'
+        assert expected_url_part in response.data["share_url"]
+        assert (
+            response.data["share_url"]
+            == f"http://testserver/api/storage/share/{file.share_token}/"
+        )
 
     def test_invalid_share_link(self, api_client, storage_public_share_url):
         """
@@ -519,6 +528,6 @@ class TestPublicShareAPI(BaseTestAPI):
         self.assert_error_response(
             response,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            expected_field='error',
-            expected_message='Не удалось загрузить файл'
+            expected_field="error",
+            expected_message="Не удалось загрузить файл",
         )

@@ -1,0 +1,33 @@
+[flake8]
+
+max-line-length = 120
+exclude =
+    .git,
+    __pycache__,
+    */migrations/*,
+    venv,
+    .env,
+    .venv,
+    */__init__.py
+
+# Игнорируемые ошибки
+extend-ignore =
+    # F401 - импортировано, но не используется (может быть полезно в __init__.py и settings.py)
+    F401,
+
+    # F541 - f-string без плейсхолдеров (можно заменить на обычные строки)
+    F541,
+
+# Per-file игнорирование
+per-file-ignores =
+    # В settings.py разрешаем неиспользуемые импорты (они нужны для Django)
+    my_cloud_project/settings.py: F401
+
+    # В тестах разрешаем переопределения (pytest фикстуры могут переопределяться)
+    tests/*: F811
+
+    # В файлах с эндпоинтами разрешаем f-string без плейсхолдеров
+    tests/api_tests/endpoints/*: F541
+
+    # В базовом классе тестов тоже разрешаем f-string без плейсхолдеров
+    tests/config/base_test_class/*: F541

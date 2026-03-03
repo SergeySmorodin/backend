@@ -24,7 +24,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         assert file.id is not None
@@ -45,7 +45,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         assert file.share_token is not None
@@ -62,7 +62,7 @@ class TestUserFileModel:
             size=1024,
             file_path="user_files/test.txt",
             share_token=custom_token,
-            share_token_created=timezone.now()
+            share_token_created=timezone.now(),
         )
 
         assert file.share_token == custom_token
@@ -75,7 +75,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test1.txt",
             size=1024,
-            file_path="user_files/test1.txt"
+            file_path="user_files/test1.txt",
         )
 
         token = file1.share_token
@@ -87,7 +87,7 @@ class TestUserFileModel:
                 original_name="test2.txt",
                 size=1024,
                 file_path="user_files/test2.txt",
-                share_token=token
+                share_token=token,
             )
 
     def test_full_path_property(self, regular_user):
@@ -97,7 +97,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         expected_path = os.path.join(settings.MEDIA_ROOT, "user_files/test.txt")
@@ -115,7 +115,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         assert file.exists is True
@@ -127,7 +127,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/nonexistent.txt"
+            file_path="user_files/nonexistent.txt",
         )
 
         assert file.exists is False
@@ -149,7 +149,7 @@ class TestUserFileModel:
                 user=regular_user,
                 original_name="test.txt",
                 size=size,
-                file_path=f"user_files/test_{size}.txt"
+                file_path=f"user_files/test_{size}.txt",
             )
             assert file.size_display == expected
 
@@ -160,7 +160,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         assert file.last_download is None
@@ -182,7 +182,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         old_token = file.share_token
@@ -190,6 +190,7 @@ class TestUserFileModel:
 
         # Ждем немного, чтобы время отличалось
         import time
+
         time.sleep(0.01)
 
         # Генерируем новый токен
@@ -206,7 +207,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         expected = f"test.txt ({regular_user.username})"
@@ -220,7 +221,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="old.txt",
             size=1024,
-            file_path="user_files/old.txt"
+            file_path="user_files/old.txt",
         )
         file1.upload_date = timezone.now() - timedelta(days=2)
         file1.save()
@@ -229,7 +230,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="new.txt",
             size=1024,
-            file_path="user_files/new.txt"
+            file_path="user_files/new.txt",
         )
         file2.upload_date = timezone.now() - timedelta(days=1)
         file2.save()
@@ -238,7 +239,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="newest.txt",
             size=1024,
-            file_path="user_files/newest.txt"
+            file_path="user_files/newest.txt",
         )
         file3.upload_date = timezone.now()
         file3.save()
@@ -255,7 +256,7 @@ class TestUserFileModel:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         user_id = regular_user.id
@@ -284,7 +285,7 @@ class TestUserFilePhysicalDeletion:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/test.txt"
+            file_path="user_files/test.txt",
         )
 
         assert os.path.exists(file_path)
@@ -301,7 +302,7 @@ class TestUserFilePhysicalDeletion:
             user=regular_user,
             original_name="test.txt",
             size=1024,
-            file_path="user_files/nonexistent.txt"
+            file_path="user_files/nonexistent.txt",
         )
 
         try:
@@ -323,7 +324,7 @@ class TestUserFilePhysicalDeletion:
                 user=regular_user,
                 original_name=f"test{i}.txt",
                 size=1024,
-                file_path=f"user_files/test{i}.txt"
+                file_path=f"user_files/test{i}.txt",
             )
             files.append(file)
 
@@ -344,7 +345,7 @@ class TestUserFilePhysicalDeletion:
             user=regular_user,
             original_name="user1_file.txt",
             size=1024,
-            file_path="user1/test.txt"
+            file_path="user1/test.txt",
         )
 
         # Создаем файлы для второго пользователя
@@ -352,7 +353,7 @@ class TestUserFilePhysicalDeletion:
             user=another_user,
             original_name="user2_file.txt",
             size=2048,
-            file_path="user2/test.txt"
+            file_path="user2/test.txt",
         )
 
         assert file1.user == regular_user
@@ -372,7 +373,7 @@ class TestGenerateShareToken:
         token = generate_share_token()
         assert isinstance(token, str)
         assert len(token) == 32
-        assert all(c in '0123456789abcdef' for c in token)
+        assert all(c in "0123456789abcdef" for c in token)
 
     def test_generate_unique_tokens(self):
         """Тест уникальности токенов"""

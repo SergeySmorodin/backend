@@ -17,7 +17,7 @@ from tests.config.data_factories.fake_users_factory import (
 pytest_plugins = [
     "tests.api_tests.endpoints.accounts_url",
     "tests.api_tests.endpoints.storage_url",
-    "tests.config.data_factories.simple_upload_file_factory"
+    "tests.config.data_factories.simple_upload_file_factory",
 ]
 
 User = get_user_model()

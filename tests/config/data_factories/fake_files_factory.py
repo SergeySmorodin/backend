@@ -27,7 +27,9 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         model = UserFile
         skip_postgeneration_save = True  # отключение авто сохранения
 
-    user = factory.SubFactory('tests.config.data_factories.fake_users_factory.RegularUserFactory')
+    user = factory.SubFactory(
+        "tests.config.data_factories.fake_users_factory.RegularUserFactory"
+    )
     original_name = factory.LazyAttribute(lambda _: fake.file_name())
     comment = factory.LazyAttribute(lambda _: fake.sentence())
 
@@ -35,7 +37,9 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         lambda o: os.path.join(o.user.storage_path, o.original_name)
     )
 
-    size = factory.LazyAttribute(lambda _: fake.random_int(min=1024, max=10 * 1024 * 1024))
+    size = factory.LazyAttribute(
+        lambda _: fake.random_int(min=1024, max=10 * 1024 * 1024)
+    )
 
     @factory.post_generation
     def create_file(self, create, extracted, **kwargs):
@@ -52,16 +56,16 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         content = None
         file_ext = os.path.splitext(self.original_name)[1].lower()
 
-        force_type = kwargs.get('_file_type', kwargs.get('file_type'))
+        force_type = kwargs.get("_file_type", kwargs.get("file_type"))
 
         if isinstance(extracted, bytes):
             content = extracted
         elif isinstance(extracted, str):
-            content = extracted.encode('utf-8')
+            content = extracted.encode("utf-8")
         elif isinstance(extracted, dict):
-            raw_content = extracted.get('content')
+            raw_content = extracted.get("content")
             if isinstance(raw_content, str):
-                content = raw_content.encode('utf-8')
+                content = raw_content.encode("utf-8")
             elif isinstance(raw_content, bytes):
                 content = raw_content
 
@@ -69,25 +73,25 @@ class UserFileFactory(factory.django.DjangoModelFactory):
         if content is None:
             target_type = force_type
             if not target_type:
-                if file_ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                    target_type = 'image'
-                elif file_ext == '.pdf':
-                    target_type = 'pdf'
+                if file_ext in [".jpg", ".jpeg", ".png", ".gif"]:
+                    target_type = "image"
+                elif file_ext == ".pdf":
+                    target_type = "pdf"
                 else:
-                    target_type = 'text'
+                    target_type = "text"
 
-            if target_type == 'image':
-                img = PILImage.new('RGB', (100, 100), color='red')
+            if target_type == "image":
+                img = PILImage.new("RGB", (100, 100), color="red")
                 buffer = io.BytesIO()
-                img.save(buffer, format='JPEG')
+                img.save(buffer, format="JPEG")
                 content = buffer.getvalue()
-            elif target_type == 'pdf':
+            elif target_type == "pdf":
                 content = b"%PDF-1.4\n%Fake PDF Content\n"
             else:
-                content = fake.text().encode('utf-8')
+                content = fake.text().encode("utf-8")
 
         # Записываем файл
-        with open(full_path, 'wb') as f:
+        with open(full_path, "wb") as f:
             f.write(content)
 
         # Обновляем размер в БД и сохраняем объект

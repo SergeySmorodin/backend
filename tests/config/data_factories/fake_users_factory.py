@@ -14,8 +14,8 @@ class UserFactory(factory.django.DjangoModelFactory):
         abstract = True  # Не создавать экземпляры этого класса
         skip_postgeneration_save = True
 
-    username = factory.Sequence(lambda n: f'user_{n:04d}')
-    email = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
+    username = factory.Sequence(lambda n: f"user_{n:04d}")
+    email = factory.LazyAttribute(lambda obj: f"{obj.username}@example.com")
     full_name = factory.LazyFunction(lambda: fake.name())
     is_active = True
 
@@ -24,7 +24,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     def password(self, create, extracted, **kwargs):
         if not create:
             return
-        self.set_password(extracted or 'testpass123')
+        self.set_password(extracted or "testpass123")
 
         if create:
             self.save()
@@ -49,7 +49,7 @@ class AdminUserFactory(UserFactory):
         model = User
         skip_postgeneration_save = True
 
-    username = factory.Sequence(lambda n: f'admin_{n:04d}')
+    username = factory.Sequence(lambda n: f"admin_{n:04d}")
     is_staff = True
     is_superuser = True
     is_admin = True
@@ -58,7 +58,7 @@ class AdminUserFactory(UserFactory):
     def password(self, create, extracted, **kwargs):
         if not create:
             return
-        self.set_password(extracted or 'adminpass123')
+        self.set_password(extracted or "adminpass123")
 
         if create:
             self.save()

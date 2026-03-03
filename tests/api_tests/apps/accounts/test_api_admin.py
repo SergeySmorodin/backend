@@ -42,7 +42,7 @@ class TestAdminAPI(BaseTestAPI):
         self.assert_get_success(response)
         assert len(response.data) >= 6
 
-        user_emails = [user['email'] for user in response.data]
+        user_emails = [user["email"] for user in response.data]
         assert regular_user.email in user_emails
 
     def test_list_users_as_regular_user(self, auth_client, accounts_users_url):
@@ -66,7 +66,9 @@ class TestAdminAPI(BaseTestAPI):
 
         self.assert_permission_denied(response, status.HTTP_403_FORBIDDEN)
 
-    def test_delete_user_as_admin(self, admin_client, accounts_detail_url, regular_user):
+    def test_delete_user_as_admin(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Тест удаления пользователя администратором
         DELETE /api/accounts/users/{user.id}/
@@ -88,7 +90,9 @@ class TestAdminAPI(BaseTestAPI):
         self.assert_permission_denied(response)
         assert User.objects.filter(id=another_user.id).exists()
 
-    def test_delete_self_as_regular_user(self, auth_client, accounts_detail_url, regular_user):
+    def test_delete_self_as_regular_user(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Тест: пользователь не может удалить сам себя
         DELETE /api/accounts/users/{user.id}/
@@ -99,7 +103,9 @@ class TestAdminAPI(BaseTestAPI):
         self.assert_validation_error(response)
         assert User.objects.filter(id=regular_user.id).exists()
 
-    def test_delete_nonexistent_user(self, admin_client, accounts_detail_url, non_existent_user):
+    def test_delete_nonexistent_user(
+        self, admin_client, accounts_detail_url, non_existent_user
+    ):
         """
         Тест удаления несуществующего пользователя
         DELETE /api/accounts/users/{user.id}/
@@ -123,7 +129,9 @@ class TestUserDetailAPI(BaseTestAPI):
 
     # ============== GET TESTS ==============
 
-    def test_get_user_detail_as_admin(self, admin_client, accounts_detail_url, regular_user):
+    def test_get_user_detail_as_admin(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Админ может получить детальную информацию о любом пользователе
         GET /api/accounts/users/{user.id}/
@@ -131,14 +139,19 @@ class TestUserDetailAPI(BaseTestAPI):
         response = admin_client.get(accounts_detail_url(regular_user))
 
         self.assert_get_success(response)
-        self.assert_user_data(response.data, regular_user,
-                              ['id', 'username', 'email', 'full_name', 'is_admin'])
+        self.assert_user_data(
+            response.data,
+            regular_user,
+            ["id", "username", "email", "full_name", "is_admin"],
+        )
 
         # Дополнительные поля для админа
-        assert 'storage_path' in response.data
-        assert 'date_joined' in response.data
+        assert "storage_path" in response.data
+        assert "date_joined" in response.data
 
-    def test_get_user_detail_as_owner(self, auth_client, accounts_detail_url, regular_user):
+    def test_get_user_detail_as_owner(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Пользователь может получить информацию о себе
         GET /api/accounts/users/{user.id}/
@@ -147,9 +160,11 @@ class TestUserDetailAPI(BaseTestAPI):
 
         self.assert_get_success(response)
         self.assert_user_data(response.data, regular_user)
-        assert 'storage_path' in response.data
+        assert "storage_path" in response.data
 
-    def test_get_user_detail_as_regular_user_other(self, auth_client, accounts_detail_url):
+    def test_get_user_detail_as_regular_user_other(
+        self, auth_client, accounts_detail_url
+    ):
         """
         Обычный пользователь не может получить информацию о другом пользователе
         GET /api/accounts/users/{another_user.id}/
@@ -159,7 +174,9 @@ class TestUserDetailAPI(BaseTestAPI):
 
         self.assert_permission_denied(response)
 
-    def test_get_nonexistent_user(self, admin_client, accounts_detail_url, non_existent_user):
+    def test_get_nonexistent_user(
+        self, admin_client, accounts_detail_url, non_existent_user
+    ):
         """
         Запрос несуществующего пользователя
         GET /api/accounts/users/{nonexistent_id}/
@@ -169,27 +186,28 @@ class TestUserDetailAPI(BaseTestAPI):
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
         content = response.content.decode()
-        assert 'not found' in content.lower() in content.lower(), \
-            "Ответ должен содержать сообщение о ненайденном ресурсе"
+        assert (
+            "not found" in content.lower() in content.lower()
+        ), "Ответ должен содержать сообщение о ненайденном ресурсе"
 
     # ============== PUT TESTS ==============
 
-    def test_put_update_user_as_admin(self, admin_client, accounts_detail_url, regular_user):
+    def test_put_update_user_as_admin(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Админ может полностью обновить данные пользователя
         PUT /api/accounts/users/{user.id}/
         """
         update_data = {
-            'username': 'updated_username',
-            'email': 'updated@example.com',
-            'full_name': 'Updated Full Name',
-            'is_admin': True
+            "username": "updated_username",
+            "email": "updated@example.com",
+            "full_name": "Updated Full Name",
+            "is_admin": True,
         }
 
         response = admin_client.put(
-            accounts_detail_url(regular_user),
-            update_data,
-            format='json'
+            accounts_detail_url(regular_user), update_data, format="json"
         )
 
         self.assert_update_success(response, update_data, regular_user)
@@ -197,21 +215,21 @@ class TestUserDetailAPI(BaseTestAPI):
         regular_user.refresh_from_db()
         assert regular_user.is_admin is True
 
-    def test_put_update_user_as_owner(self, auth_client, accounts_detail_url, regular_user):
+    def test_put_update_user_as_owner(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Пользователь может обновить свои данные (кроме is_admin)
         PUT /api/accounts/users/{user.id}/
         """
         update_data = {
-            'username': 'my_new_username',
-            'email': 'my_new@example.com',
-            'full_name': 'My New Name',
+            "username": "my_new_username",
+            "email": "my_new@example.com",
+            "full_name": "My New Name",
         }
 
         response = auth_client.put(
-            accounts_detail_url(regular_user),
-            update_data,
-            format='json'
+            accounts_detail_url(regular_user), update_data, format="json"
         )
 
         self.assert_update_success(response, update_data, regular_user)
@@ -223,152 +241,159 @@ class TestUserDetailAPI(BaseTestAPI):
         """
         another_user = RegularUserFactory()
         update_data = {
-            'username': 'hacked_username',
-            'email': 'hacked@example.com',
-            'full_name': 'Hacked Name'
+            "username": "hacked_username",
+            "email": "hacked@example.com",
+            "full_name": "Hacked Name",
         }
 
         response = auth_client.put(
-            accounts_detail_url(another_user),
-            update_data,
-            format='json'
+            accounts_detail_url(another_user), update_data, format="json"
         )
 
         self.assert_permission_denied(response)
 
         # Проверка, что данные не изменились
         another_user.refresh_from_db()
-        assert another_user.username != 'hacked_username'
+        assert another_user.username != "hacked_username"
 
     # ============== PATCH TESTS ==============
 
-    def test_patch_update_user_as_admin(self, admin_client, accounts_detail_url, regular_user):
+    def test_patch_update_user_as_admin(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Админ может частично обновить данные пользователя
         PATCH /api/accounts/users/{user.id}/
         """
-        patch_data = {
-            'full_name': 'Patched Name',
-            'is_admin': True
-        }
+        patch_data = {"full_name": "Patched Name", "is_admin": True}
 
         response = admin_client.patch(
-            accounts_detail_url(regular_user),
-            patch_data,
-            format='json'
+            accounts_detail_url(regular_user), patch_data, format="json"
         )
 
         self.assert_update_success(response, patch_data, regular_user)
 
         regular_user.refresh_from_db()
-        assert regular_user.full_name == 'Patched Name'
+        assert regular_user.full_name == "Patched Name"
         assert regular_user.is_admin is True
 
-    def test_patch_update_user_as_owner(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_user_as_owner(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Пользователь может частично обновить свои данные
         PATCH /api/accounts/users/{user.id}/
         """
-        patch_data = {
-            'full_name': 'My Patched Name'
-        }
+        patch_data = {"full_name": "My Patched Name"}
 
         response = auth_client.patch(
-            accounts_detail_url(regular_user),
-            patch_data,
-            format='json'
+            accounts_detail_url(regular_user), patch_data, format="json"
         )
 
         self.assert_update_success(response, patch_data, regular_user)
 
-    def test_patch_update_email_to_existing(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_email_to_existing(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Нельзя обновить email на уже существующий
         PATCH /api/accounts/users/{user.id}/
         """
         another_user = RegularUserFactory()
 
-        patch_data = {
-            'email': another_user.email
-        }
+        patch_data = {"email": another_user.email}
 
         response = auth_client.patch(
-            accounts_detail_url(regular_user),
-            patch_data,
-            format='json'
+            accounts_detail_url(regular_user), patch_data, format="json"
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'email' in response.data
+        assert "email" in response.data
 
-    def test_patch_update_username_to_existing(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_username_to_existing(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Нельзя обновить username на уже существующий
         PATCH /api/accounts/users/{user.id}/
         """
         another_user = RegularUserFactory()
 
-        patch_data = {
-            'username': another_user.username
-        }
+        patch_data = {"username": another_user.username}
 
         response = auth_client.patch(
-            accounts_detail_url(regular_user),
-            patch_data,
-            format='json'
+            accounts_detail_url(regular_user), patch_data, format="json"
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'username' in response.data
+        assert "username" in response.data
 
-    def test_patch_update_user_as_owner(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_user_as_owner(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Пользователь не может обновить is_admin
         PATCH /api/accounts/users/{user.id}/
         """
 
-        update_data = {
-            'is_admin': True
-        }
+        update_data = {"is_admin": True}
 
         response = auth_client.patch(
-            accounts_detail_url(regular_user),
-            update_data,
-            format='json'
+            accounts_detail_url(regular_user), update_data, format="json"
         )
 
         # Проверяем, что пришла ошибка 400
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-        assert 'is_admin' in response.data
-        assert "Только администратор" in str(response.data['is_admin'])
+        assert "is_admin" in response.data
+        assert "Только администратор" in str(response.data["is_admin"])
 
         regular_user.refresh_from_db()
         assert regular_user.is_admin is False
 
     # ============== PERMISSIONS TESTS ==============
 
-    def test_unauthorized_access(self, api_client, accounts_detail_url, regular_user):
+    @pytest.mark.parametrize(
+        "method, expected_status, payload",
+        [
+            ("get", status.HTTP_403_FORBIDDEN, None),
+            ("put", status.HTTP_403_FORBIDDEN, {}),
+            ("patch", status.HTTP_403_FORBIDDEN, {}),
+            ("delete", status.HTTP_403_FORBIDDEN, None),
+        ],
+    )
+    def test_unauthorized_access(
+        self,
+        api_client,
+        accounts_detail_url,
+        regular_user,
+        method,
+        expected_status,
+        payload,
+    ):
         """
         Неавторизованный пользователь не имеет доступа
+        Параметризованный тест для всех HTTP методов
         """
-        # GET
-        response = api_client.get(accounts_detail_url(regular_user))
-        self.assert_status(response, status.HTTP_403_FORBIDDEN) # fixme
+        url = accounts_detail_url(regular_user)
 
-        # PUT
-        response = api_client.put(accounts_detail_url(regular_user), {}, format='json')
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        # Выбираем метод и делаем запрос
+        if method == "get":
+            response = api_client.get(url)
+        elif method == "put":
+            response = api_client.put(url, payload or {}, format="json")
+        elif method == "patch":
+            response = api_client.patch(url, payload or {}, format="json")
+        elif method == "delete":
+            response = api_client.delete(url)
+        else:
+            pytest.fail(f"Неподдерживаемый метод: {method}")
 
-        # PATCH
-        response = api_client.patch(accounts_detail_url(regular_user), {}, format='json')
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        self.assert_status(response, expected_status)
 
-        # DELETE
-        response = api_client.delete(accounts_detail_url(regular_user))
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-
-    def test_admin_can_do_anything(self, admin_client, accounts_detail_url, regular_user):
+    def test_admin_can_do_anything(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Админ имеет полный доступ к любому пользователю
         """
@@ -379,16 +404,20 @@ class TestUserDetailAPI(BaseTestAPI):
         # PUT
         response = admin_client.put(
             accounts_detail_url(regular_user),
-            {'username': 'admin_updated', 'email': 'admin@test.com', 'full_name': 'Admin Update'},
-            format='json'
+            {
+                "username": "admin_updated",
+                "email": "admin@test.com",
+                "full_name": "Admin Update",
+            },
+            format="json",
         )
         assert response.status_code == status.HTTP_200_OK
 
         # PATCH
         response = admin_client.patch(
             accounts_detail_url(regular_user),
-            {'full_name': 'Admin Patch'},
-            format='json'
+            {"full_name": "Admin Patch"},
+            format="json",
         )
         assert response.status_code == status.HTTP_200_OK
 
@@ -397,7 +426,9 @@ class TestUserDetailAPI(BaseTestAPI):
         response = admin_client.delete(accounts_detail_url(another_user))
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_admin_cannot_delete_self(self, admin_client, accounts_detail_url, admin_user):
+    def test_admin_cannot_delete_self(
+        self, admin_client, accounts_detail_url, admin_user
+    ):
         """
         Админ не может удалить сам себя
         DELETE /api/accounts/users/{admin.id}/
@@ -407,7 +438,9 @@ class TestUserDetailAPI(BaseTestAPI):
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert User.objects.filter(id=admin_user.id).exists()
 
-    def test_regular_user_cannot_delete_self(self, auth_client, accounts_detail_url, regular_user):
+    def test_regular_user_cannot_delete_self(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Обычный пользователь не может удалить себя (нет прав)
         DELETE /api/accounts/users/{regular_user.id}/

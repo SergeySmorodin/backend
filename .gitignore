@@ -48,3 +48,7 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Исключить все файлы миграций
+**/migrations/*.py
+**/migrations/*.pyc

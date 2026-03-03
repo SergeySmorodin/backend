@@ -15,17 +15,26 @@ class TestAdminAPI(BaseTestAPI):
     Тесты для административных API
     GET /api/accounts/users/me/
     GET /api/accounts/users/
+    DELETE /api/accounts/users/{user.id}/
     """
 
     def test_get_current_user(self, auth_client, regular_user, accounts_me_url):
-        """Тест получения информации о текущем пользователе"""
+        """
+        Тест получения информации о текущем пользователе
+        GET /api/accounts/users/me/
+        """
+
         response = auth_client.get(accounts_me_url)
 
         self.assert_get_success(response)
         self.assert_user_data(response.data, regular_user)
 
     def test_list_users_as_admin(self, admin_client, accounts_users_url, regular_user):
-        """Тест получения списка пользователей администратором"""
+        """
+        Тест получения списка пользователей администратором
+        GET /api/accounts/users/
+        """
+
         RegularUserFactory.create_batch(5)
 
         response = admin_client.get(accounts_users_url)
@@ -37,26 +46,42 @@ class TestAdminAPI(BaseTestAPI):
         assert regular_user.email in user_emails
 
     def test_list_users_as_regular_user(self, auth_client, accounts_users_url):
-        """Тест: обычный пользователь может получить список пользователей"""
+        """
+        Тест: обычный пользователь может получить список пользователей
+        GET /api/accounts/users/
+        """
+
         RegularUserFactory.create_batch(5)
         response = auth_client.get(accounts_users_url)
 
         self.assert_get_success(response)
 
     def test_list_users_unauthorized(self, api_client, accounts_users_url):
-        """Тест: неавторизованный пользователь не может получить список"""
+        """
+        Тест: неавторизованный пользователь не может получить список
+        GET /api/accounts/users/
+        """
+
         response = api_client.get(accounts_users_url)
 
         self.assert_permission_denied(response, status.HTTP_403_FORBIDDEN)
 
     def test_delete_user_as_admin(self, admin_client, accounts_detail_url, regular_user):
-        """Тест удаления пользователя администратором"""
+        """
+        Тест удаления пользователя администратором
+        DELETE /api/accounts/users/{user.id}/
+        """
+
         response = admin_client.delete(accounts_detail_url(regular_user))
 
         self.assert_delete_success(response, regular_user.id)
 
     def test_delete_user_as_regular_user(self, auth_client, accounts_detail_url):
-        """Тест: обычный пользователь не может удалить другого пользователя"""
+        """
+        Тест: обычный пользователь не может удалить другого пользователя
+        DELETE /api/accounts/users/{user.id}/
+        """
+
         another_user = RegularUserFactory()
         response = auth_client.delete(accounts_detail_url(another_user))
 
@@ -64,14 +89,22 @@ class TestAdminAPI(BaseTestAPI):
         assert User.objects.filter(id=another_user.id).exists()
 
     def test_delete_self_as_regular_user(self, auth_client, accounts_detail_url, regular_user):
-        """Тест: пользователь не может удалить сам себя"""
+        """
+        Тест: пользователь не может удалить сам себя
+        DELETE /api/accounts/users/{user.id}/
+        """
+
         response = auth_client.delete(accounts_detail_url(regular_user))
 
         self.assert_validation_error(response)
         assert User.objects.filter(id=regular_user.id).exists()
 
     def test_delete_nonexistent_user(self, admin_client, accounts_detail_url, non_existent_user):
-        """Тест удаления несуществующего пользователя"""
+        """
+        Тест удаления несуществующего пользователя
+        DELETE /api/accounts/users/{user.id}/
+        """
+
         response = admin_client.delete(accounts_detail_url(non_existent_user))
 
         assert response.status_code == status.HTTP_404_NOT_FOUND

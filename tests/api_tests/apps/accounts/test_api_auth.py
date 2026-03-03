@@ -2,12 +2,14 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import status
 
+from tests.config.base_test_class.base_test_api_class import BaseTestAPI
+
 User = get_user_model()
 
 
 @pytest.mark.api
 @pytest.mark.django_db
-class TestAuthAPI:
+class TestAuthAPI(BaseTestAPI):
     """
     Тесты для аутентификации
 
@@ -30,11 +32,14 @@ class TestAuthAPI:
             format='json'
         )
 
-        assert response.status_code == status.HTTP_201_CREATED
+        self.assert_status(response, status.HTTP_201_CREATED)
+        self.assert_response_has_fields(response.data, ['token', 'user'])
 
-        assert 'token' in response.data
-        assert response.data['user']['email'] == payload['email']
-        assert response.data['user']['username'] == payload['username']
+        # Проверяем данные пользователя
+        user_data = response.data['user']
+        self.assert_response_has_fields(user_data, ['id', 'email', 'username'])
+        assert user_data['email'] == payload['email']
+        assert user_data['username'] == payload['username']
 
         # Проверяем, что пользователь создан в БД
         assert User.objects.filter(email=payload['email']).exists()
@@ -54,8 +59,13 @@ class TestAuthAPI:
             format='json'
         )
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'password' in response.data or 'non_field_errors' in response.data
+        # Используем методы проверки ошибок из базового класса
+        self.assert_validation_error(response)
+
+        # Дополнительная проверка наличия ошибки в конкретном поле
+        error_fields = response.data.keys()
+        assert any(field in error_fields for field in ['password', 'non_field_errors']), \
+            f"Ожидалась ошибка в полях 'password' или 'non_field_errors', получено: {error_fields}"
 
     def test_register_user_duplicate_email(self, api_client, regular_user, accounts_register_url, test_user_data):
         """
@@ -64,7 +74,7 @@ class TestAuthAPI:
         """
 
         payload = test_user_data
-        payload['email'] = regular_user.email,  # Существующий email
+        payload['email'] = regular_user.email  # Существующий email
 
         response = api_client.post(
             accounts_register_url,
@@ -72,8 +82,12 @@ class TestAuthAPI:
             format='json'
         )
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'email' in response.data
+        # Проверяем ошибку валидации для поля email
+        self.assert_error_response(
+            response,
+            status.HTTP_400_BAD_REQUEST,
+            expected_field='email'
+        )
 
     def test_login_user(self, api_client, regular_user, accounts_login_url, test_login_data):
         """
@@ -89,9 +103,12 @@ class TestAuthAPI:
             format='json'
         )
 
-        assert response.status_code == status.HTTP_200_OK
-        assert 'token' in response.data
-        assert response.data['user']['id'] == regular_user.id
+        self.assert_status(response, status.HTTP_200_OK)
+        self.assert_response_has_fields(response.data, ['token', 'user'])
+
+        user_data = response.data['user']
+        self.assert_user_data(user_data, regular_user)
+        assert user_data['id'] == regular_user.id
 
     def test_login_wrong_password(self, api_client, regular_user, accounts_login_url, test_login_data):
         """
@@ -108,7 +125,7 @@ class TestAuthAPI:
             format='json'
         )
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.assert_validation_error(response)
 
     def test_logout(self, auth_client, accounts_logout_url):
         """
@@ -118,5 +135,7 @@ class TestAuthAPI:
 
         response = auth_client.post(accounts_logout_url)
 
-        assert response.status_code == status.HTTP_200_OK
+        self.assert_status(response, status.HTTP_200_OK)
+        self.assert_response_has_fields(response.data, ['message'])
+
         assert response.data['message'] == 'Выход выполнен успешно'

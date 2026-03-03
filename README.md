@@ -41,7 +41,7 @@ python manage.py migrate
 python manage.py runserver
 
 # Запустить тесты
-pytest
+pytest -n auto
 
 # Проверка кода
 poetry run black .

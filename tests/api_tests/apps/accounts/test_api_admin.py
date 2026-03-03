@@ -67,7 +67,7 @@ class TestAdminAPI(BaseTestAPI):
         """Тест: пользователь не может удалить сам себя"""
         response = auth_client.delete(accounts_detail_url(regular_user))
 
-        self.assert_permission_denied(response)
+        self.assert_validation_error(response)
         assert User.objects.filter(id=regular_user.id).exists()
 
     def test_delete_nonexistent_user(self, admin_client, accounts_detail_url, non_existent_user):
@@ -381,5 +381,5 @@ class TestUserDetailAPI(BaseTestAPI):
         """
         response = auth_client.delete(accounts_detail_url(regular_user))
 
-        self.assert_permission_denied(response)
+        self.assert_validation_error(response)
         assert User.objects.filter(id=regular_user.id).exists()

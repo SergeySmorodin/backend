@@ -67,7 +67,7 @@ class TestAdminAPI(BaseTestAPI):
         self.assert_permission_denied(response, status.HTTP_403_FORBIDDEN)
 
     def test_delete_user_as_admin(
-        self, admin_client, accounts_detail_url, regular_user
+            self, admin_client, accounts_detail_url, regular_user
     ):
         """
         Тест удаления пользователя администратором
@@ -91,7 +91,7 @@ class TestAdminAPI(BaseTestAPI):
         assert User.objects.filter(id=another_user.id).exists()
 
     def test_delete_self_as_regular_user(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Тест: пользователь не может удалить сам себя
@@ -104,7 +104,7 @@ class TestAdminAPI(BaseTestAPI):
         assert User.objects.filter(id=regular_user.id).exists()
 
     def test_delete_nonexistent_user(
-        self, admin_client, accounts_detail_url, non_existent_user
+            self, admin_client, accounts_detail_url, non_existent_user
     ):
         """
         Тест удаления несуществующего пользователя
@@ -130,7 +130,7 @@ class TestUserDetailAPI(BaseTestAPI):
     # ============== GET TESTS ==============
 
     def test_get_user_detail_as_admin(
-        self, admin_client, accounts_detail_url, regular_user
+            self, admin_client, accounts_detail_url, regular_user
     ):
         """
         Админ может получить детальную информацию о любом пользователе
@@ -150,7 +150,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert "date_joined" in response.data
 
     def test_get_user_detail_as_owner(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Пользователь может получить информацию о себе
@@ -163,7 +163,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert "storage_path" in response.data
 
     def test_get_user_detail_as_regular_user_other(
-        self, auth_client, accounts_detail_url
+            self, auth_client, accounts_detail_url
     ):
         """
         Обычный пользователь не может получить информацию о другом пользователе
@@ -175,7 +175,7 @@ class TestUserDetailAPI(BaseTestAPI):
         self.assert_permission_denied(response)
 
     def test_get_nonexistent_user(
-        self, admin_client, accounts_detail_url, non_existent_user
+            self, admin_client, accounts_detail_url, non_existent_user
     ):
         """
         Запрос несуществующего пользователя
@@ -187,13 +187,13 @@ class TestUserDetailAPI(BaseTestAPI):
 
         content = response.content.decode()
         assert (
-            "not found" in content.lower() in content.lower()
+                "not found" in content.lower() in content.lower()
         ), "Ответ должен содержать сообщение о ненайденном ресурсе"
 
     # ============== PUT TESTS ==============
 
     def test_put_update_user_as_admin(
-        self, admin_client, accounts_detail_url, regular_user
+            self, admin_client, accounts_detail_url, regular_user
     ):
         """
         Админ может полностью обновить данные пользователя
@@ -216,7 +216,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert regular_user.is_admin is True
 
     def test_put_update_user_as_owner(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Пользователь может обновить свои данные (кроме is_admin)
@@ -259,7 +259,7 @@ class TestUserDetailAPI(BaseTestAPI):
     # ============== PATCH TESTS ==============
 
     def test_patch_update_user_as_admin(
-        self, admin_client, accounts_detail_url, regular_user
+            self, admin_client, accounts_detail_url, regular_user
     ):
         """
         Админ может частично обновить данные пользователя
@@ -278,7 +278,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert regular_user.is_admin is True
 
     def test_patch_update_user_as_owner(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Пользователь может частично обновить свои данные
@@ -293,7 +293,7 @@ class TestUserDetailAPI(BaseTestAPI):
         self.assert_update_success(response, patch_data, regular_user)
 
     def test_patch_update_email_to_existing(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Нельзя обновить email на уже существующий
@@ -311,7 +311,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert "email" in response.data
 
     def test_patch_update_username_to_existing(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Нельзя обновить username на уже существующий
@@ -329,7 +329,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert "username" in response.data
 
     def test_patch_update_user_as_owner(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Пользователь не может обновить is_admin
@@ -363,18 +363,19 @@ class TestUserDetailAPI(BaseTestAPI):
         ],
     )
     def test_unauthorized_access(
-        self,
-        api_client,
-        accounts_detail_url,
-        regular_user,
-        method,
-        expected_status,
-        payload,
+            self,
+            api_client,
+            accounts_detail_url,
+            regular_user,
+            method,
+            expected_status,
+            payload,
     ):
         """
         Неавторизованный пользователь не имеет доступа
         Параметризованный тест для всех HTTP методов
         """
+
         url = accounts_detail_url(regular_user)
 
         # Выбираем метод и делаем запрос
@@ -392,7 +393,7 @@ class TestUserDetailAPI(BaseTestAPI):
         self.assert_status(response, expected_status)
 
     def test_admin_can_do_anything(
-        self, admin_client, accounts_detail_url, regular_user
+            self, admin_client, accounts_detail_url, regular_user
     ):
         """
         Админ имеет полный доступ к любому пользователю
@@ -427,7 +428,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_admin_cannot_delete_self(
-        self, admin_client, accounts_detail_url, admin_user
+            self, admin_client, accounts_detail_url, admin_user
     ):
         """
         Админ не может удалить сам себя
@@ -439,7 +440,7 @@ class TestUserDetailAPI(BaseTestAPI):
         assert User.objects.filter(id=admin_user.id).exists()
 
     def test_regular_user_cannot_delete_self(
-        self, auth_client, accounts_detail_url, regular_user
+            self, auth_client, accounts_detail_url, regular_user
     ):
         """
         Обычный пользователь не может удалить себя (нет прав)

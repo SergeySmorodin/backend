@@ -1,14 +1,22 @@
-[run]
+[coverage:run]
+parallel = True
+concurrency = multiprocessing
+source = .
 omit =
-    tests\*,
-    logs\*,
-    .venv\*,
-    manage.py,
-    static\*,
-    media\*,
-    templates\*,
-    *\migrations\*,
-    *\__init__.py,
-    *\admin.py,
-    config\*,
+    tests/*
+    .venv/*
+    */migrations/*
+    manage.py
     *settings.py
+    config/*
+    */wsgi.py
+    */asgi.py
+    */__init__.py
+    static/*
+    media/*
+    templates/*
+
+[coverage:paths]
+source =
+    apps/
+    my_cloud_project/

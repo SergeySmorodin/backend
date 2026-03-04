@@ -18,13 +18,13 @@ class TestAuthAPI(BaseTestAPI):
     POST /api/accounts/users/logout/
     """
 
-    def test_register_user(self, api_client, accounts_register_url, test_user_data):
+    def test_register_user(self, api_client, accounts_register_url, test_auth_user_data):
         """
         Тест регистрации пользователя
         POST /api/accounts/users/register/
         """
 
-        payload = test_user_data
+        payload = test_auth_user_data
 
         response = api_client.post(accounts_register_url, payload, format="json")
 
@@ -41,14 +41,14 @@ class TestAuthAPI(BaseTestAPI):
         assert User.objects.filter(email=payload["email"]).exists()
 
     def test_register_user_password_mismatch(
-        self, api_client, accounts_register_url, test_user_data
+        self, api_client, accounts_register_url, test_auth_user_data
     ):
         """
         Тест регистрации с несовпадающими паролями
         POST /api/accounts/users/register/
         """
 
-        payload = test_user_data
+        payload = test_auth_user_data
         payload["password2"] = "DifferentPass123!"
 
         response = api_client.post(accounts_register_url, payload, format="json")
@@ -63,14 +63,14 @@ class TestAuthAPI(BaseTestAPI):
         ), f"Ожидалась ошибка в полях 'password' или 'non_field_errors', получено: {error_fields}"
 
     def test_register_user_duplicate_email(
-        self, api_client, regular_user, accounts_register_url, test_user_data
+        self, api_client, regular_user, accounts_register_url, test_auth_user_data
     ):
         """
         Тест регистрации с существующим email
         POST /api/accounts/users/register/
         """
 
-        payload = test_user_data
+        payload = test_auth_user_data
         payload["email"] = regular_user.email  # Существующий email
 
         response = api_client.post(accounts_register_url, payload, format="json")

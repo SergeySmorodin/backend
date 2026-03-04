@@ -24,7 +24,6 @@ class TestFileAPIPermissions(BaseTestAPI):
         Неавторизованный пользователь не может получить список файлов
         GET /api/storage/
         """
-
         response = api_client.get(storage_url)
         self.assert_status(response, status.HTTP_403_FORBIDDEN)
 
@@ -35,7 +34,6 @@ class TestFileAPIPermissions(BaseTestAPI):
         Авторизованный пользователь может получить свои файлы
         GET /api/storage/
         """
-
         test_file = UserFileFactory(user=regular_user)
 
         response = auth_client.get(storage_url)
@@ -50,7 +48,6 @@ class TestFileAPIPermissions(BaseTestAPI):
         Пользователь не может видеть файлы других пользователей
         GET /api/storage/
         """
-
         another_user = RegularUserFactory()
         UserFileFactory(user=another_user)
 
@@ -99,7 +96,6 @@ class TestFileUploadAPI(BaseTestAPI):
         Тест загрузки файла
         POST /api/storage/
         """
-
         # Получаем реальный размер файла
         text_file.seek(0, os.SEEK_END)
         file_size = text_file.tell()
@@ -141,7 +137,6 @@ class TestFileUploadAPI(BaseTestAPI):
         Тест загрузки файла без комментария
         POST /api/storage/
         """
-
         response = auth_client.post(
             storage_url,
             {
@@ -187,7 +182,6 @@ class TestFileUpdateAPI(BaseTestAPI):
         Тест обновления комментария к файлу
         PATCH /api/storage/{file.id}/
         """
-
         file = UserFileFactory(user=regular_user, comment="Old comment")
 
         url = storage_detail_url(file)
@@ -202,7 +196,6 @@ class TestFileUpdateAPI(BaseTestAPI):
         Тест переименования файла
         PATCH /api/storage/{file.id}/
         """
-
         file = UserFileFactory(user=regular_user, original_name="old_name.txt")
 
         data = {"original_name": "new_name.txt"}
@@ -218,7 +211,6 @@ class TestFileUpdateAPI(BaseTestAPI):
         Пользователь не может обновить чужой файл
         PATCH /api/storage/{file.id}/
         """
-
         another_user = RegularUserFactory()
         file = UserFileFactory(user=another_user)
 
@@ -241,7 +233,6 @@ class TestFileDeleteAPI(BaseTestAPI):
         Тест удаления файла админом
         DELETE /api/storage/{file.id}/
         """
-
         file = UserFileFactory(user=regular_user, create_file=True)
 
         # Проверяем, что файл создан
@@ -261,7 +252,6 @@ class TestFileDeleteAPI(BaseTestAPI):
         Тест удаления своего файла юзером
         DELETE /api/storage/{file.id}/
         """
-
         file = UserFileFactory(user=regular_user, create_file=True)
 
         url = storage_detail_url(file)
@@ -277,7 +267,6 @@ class TestFileDeleteAPI(BaseTestAPI):
         Тест удаления пустых директорий при удалении файла
         DELETE /api/storage/{file.id}/
         """
-
         # Создаем файл во вложенной директории
         nested_path = os.path.join("user_files", "subdir", "nested", "test.txt")
         file = UserFileFactory(
@@ -306,7 +295,6 @@ class TestFileDeleteAPI(BaseTestAPI):
         Пользователь не может удалить чужой файл
         DELETE /api/storage/{file.id}/
         """
-
         another_user = RegularUserFactory()
         file = UserFileFactory(user=another_user, create_file=True)
 
@@ -356,7 +344,6 @@ class TestFileDownloadAPI(BaseTestAPI):
         Тест просмотра файла в браузере
         GET /api/storage/{file.id}/view/
         """
-
         file_content = image_file.read()
         image_file.seek(0)
 
@@ -378,7 +365,6 @@ class TestFileDownloadAPI(BaseTestAPI):
         Тест скачивания несуществующего файла
         GET /api/storage/{file.id}/download/
         """
-
         file = UserFileFactory(
             user=regular_user,
             file_path="user_files/nonexistent.txt",
@@ -423,7 +409,6 @@ class TestFileShareAPI(BaseTestAPI):
         Тест отзыва ссылки для общего доступа
         DELETE /api/storage/{file.id}/revoke_share/
         """
-
         file = UserFileFactory(user=regular_user, share_token="test_token_123")
 
         url = storage_revoke_share_url(file)
@@ -440,7 +425,6 @@ class TestFileShareAPI(BaseTestAPI):
         Тест обновления ссылки
         POST /api/storage/{file.id}/share/ (повторный вызов)
         """
-
         file = UserFileFactory(user=regular_user, share_token="old_token_123")
 
         old_token = file.share_token
@@ -467,7 +451,6 @@ class TestPublicShareAPI(BaseTestAPI):
         Тест скачивания файла по публичной ссылке
         GET /api/storage/share/{share_token}/
         """
-
         file = UserFileFactory(user=regular_user, create_file="shared content")
 
         # Получаем сгенерированный токен из модели
@@ -489,7 +472,6 @@ class TestPublicShareAPI(BaseTestAPI):
         Тест получения информации о файле по ссылке
         GET /api/storage/share/{share_token}/?info=true
         """
-
         file = UserFileFactory(user=regular_user)
 
         share_token_uuid = uuid.UUID(file.share_token)
@@ -519,7 +501,6 @@ class TestPublicShareAPI(BaseTestAPI):
         Тест недействительной ссылки
         GET /api/storage/share/{invalid_token}/
         """
-
         invalid_token = uuid.uuid4()
 
         url = storage_public_share_url(str(invalid_token))

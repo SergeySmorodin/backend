@@ -11,4 +11,6 @@ omit =
     *\__init__.py,
     *\admin.py,
     config\*,
-    *settings.py
+    *settings.py,
+    *\wsgi.py,
+    *\asgi.py

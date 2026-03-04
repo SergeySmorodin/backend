@@ -48,13 +48,19 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request):
-        """Информация о текущем пользователе"""
+        """
+        Информация о текущем пользователе
+        GET /api/accounts/users/me/
+        """
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
     @action(detail=False, methods=["post"], permission_classes=[permissions.AllowAny])
     def register(self, request):
-        """Регистрация нового пользователя"""
+        """
+        Регистрация нового пользователя
+        POST /api/accounts/users/register/
+        """
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -71,7 +77,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], permission_classes=[permissions.AllowAny])
     def login(self, request):
-        """Вход в систему"""
+        """
+        Вход в систему
+        POST /api/accounts/users/login/
+        """
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
@@ -91,7 +100,10 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated]
     )
     def logout(self, request):
-        """Выход из системы"""
+        """
+        Выход из системы
+        POST /api/accounts/users/logout/
+        """
         try:
             if hasattr(request.user, "auth_token"):
                 request.user.auth_token.delete()

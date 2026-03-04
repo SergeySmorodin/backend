@@ -82,3 +82,6 @@ GET /api/storage/share/{share_link}/ - скачивание по ссылке
 ```pytest -n auto```
 * Запуск тестов + покрытие кода с полной очисткой старых отчетов
 ```coverage erase; Remove-Item -Recurse -Force htmlcov -ErrorAction SilentlyContinue; pytest -n auto --cov=. --cov-config=.coveragerc --cov-report=html --cov-report=term-missing```
+
+# Документация апи
+[API DOCS](http://127.0.0.1:8000/api/docs/)

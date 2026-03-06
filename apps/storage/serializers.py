@@ -159,7 +159,13 @@ class FileShareSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserFile
-        fields = ["share_token", "share_url", "share_token_created"]
+        fields = [
+            "share_token",
+            "share_url",
+            "share_token_created",
+            "original_name",
+            "size"
+        ]
         read_only_fields = fields
 
     def get_share_url(self, obj):

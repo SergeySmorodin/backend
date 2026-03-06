@@ -17,8 +17,8 @@ from .serializers import (
     FileListSerializer,
     FileUploadSerializer,
     FileUpdateSerializer,
-    FileShareSerializer,
 )
+from .serializers import FileShareSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -226,39 +226,35 @@ class FileShareDownloadView(APIView):
     permission_classes = []
 
     def get(self, request, share_link):
-        # Валидация токена
         if not share_link or not re.match(r'^[0-9a-f]{32}$', share_link, re.IGNORECASE):
-            logger.warning(f"Невалидный формат токена: {share_link}")
             raise Http404("Ссылка недействительна")
 
         try:
             file_obj = UserFile.objects.get(share_token=share_link)
+
             if not os.path.exists(file_obj.full_path):
-                logger.warning(f"Файл не найден на диске: {file_obj.full_path}")
                 raise Http404("Файл не найден")
 
-            # Обновление статистики
+            if request.query_params.get('info') == 'true':
+                serializer = FileShareSerializer(file_obj, context={'request': request})
+                return Response(serializer.data)
+
             file_obj.update_download_date()
 
-            # Определение MIME-типа
             content_type, _ = mimetypes.guess_type(file_obj.original_name)
             if not content_type:
                 content_type = 'application/octet-stream'
 
-            # Формирование ответа
-            file_handle = open(file_obj.full_path, 'rb')
-            response = FileResponse(file_handle, content_type=content_type)
-
-            # Заголовки
+            response = FileResponse(
+                open(file_obj.full_path, 'rb'),
+                content_type=content_type
+            )
             response['Content-Disposition'] = f'attachment; filename="{file_obj.original_name}"'
             response['X-Content-Type-Options'] = 'nosniff'
 
-            logger.info(f"Файл {file_obj.id} скачан по публичной ссылке")
             return response
 
         except UserFile.DoesNotExist:
-            logger.warning(f"Токен не найден: {share_link}")
             raise Http404("Ссылка недействительна")
         except (IOError, OSError, PermissionError) as e:
-            logger.error(f"Ошибка чтения файла {share_link}: {e}")
-            raise Http404("Ошибка при чтении файла")
+            raise Http404("Ошибка чтения файла")

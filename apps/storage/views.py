@@ -1,14 +1,15 @@
 import logging
 import mimetypes
 import os
+import re
 
 from django.conf import settings
 from django.http import FileResponse, Http404
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsAdminOrSelf
 from .models import UserFile
@@ -218,40 +219,46 @@ class FileViewSet(viewsets.ModelViewSet):
                 break
 
 
-class FileShareDownloadViewSet(viewsets.ViewSet):
-    """ViewSet для скачивания файлов по публичным ссылкам"""
+class FileShareDownloadView(APIView):
+    """Публичный доступ к файлу по токену (без авторизации)"""
 
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+    permission_classes = []
 
-    def retrieve(self, request, share_link=None):
+    def get(self, request, share_link):
+        # Валидация токена
+        if not share_link or not re.match(r'^[0-9a-f]{32}$', share_link, re.IGNORECASE):
+            logger.warning(f"Невалидный формат токена: {share_link}")
+            raise Http404("Ссылка недействительна")
+
         try:
-            file_obj = get_object_or_404(UserFile, share_token=share_link.hex)
+            file_obj = UserFile.objects.get(share_token=share_link)
+            if not os.path.exists(file_obj.full_path):
+                logger.warning(f"Файл не найден на диске: {file_obj.full_path}")
+                raise Http404("Файл не найден")
 
-            if request.query_params.get("info") == "true":
-                serializer = FileShareSerializer(file_obj, context={"request": request})
-                return Response(serializer.data)
-
-            if not file_obj.exists:
-                raise Http404("Файл не найден на сервере")
-
+            # Обновление статистики
             file_obj.update_download_date()
 
-            response = FileResponse(
-                open(file_obj.full_path, "rb"),
-                as_attachment=True,
-                filename=file_obj.original_name,
-            )
+            # Определение MIME-типа
+            content_type, _ = mimetypes.guess_type(file_obj.original_name)
+            if not content_type:
+                content_type = 'application/octet-stream'
+
+            # Формирование ответа
+            file_handle = open(file_obj.full_path, 'rb')
+            response = FileResponse(file_handle, content_type=content_type)
+
+            # Заголовки
+            response['Content-Disposition'] = f'attachment; filename="{file_obj.original_name}"'
+            response['X-Content-Type-Options'] = 'nosniff'
 
             logger.info(f"Файл {file_obj.id} скачан по публичной ссылке")
             return response
 
         except UserFile.DoesNotExist:
-            return Response(
-                {"error": "Ссылка недействительна"}, status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            logger.error(f"Ошибка при скачивании по ссылке: {str(e)}")
-            return Response(
-                {"error": "Не удалось загрузить файл"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            logger.warning(f"Токен не найден: {share_link}")
+            raise Http404("Ссылка недействительна")
+        except (IOError, OSError, PermissionError) as e:
+            logger.error(f"Ошибка чтения файла {share_link}: {e}")
+            raise Http404("Ошибка при чтении файла")

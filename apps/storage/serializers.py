@@ -153,16 +153,19 @@ class FileUpdateSerializer(serializers.ModelSerializer):
 
 
 class FileShareSerializer(serializers.ModelSerializer):
+    """Сериализатор для информации о публичной ссылке"""
+
     share_url = serializers.SerializerMethodField()
-    share_token = serializers.CharField(read_only=True)
 
     class Meta:
         model = UserFile
         fields = ["share_token", "share_url", "share_token_created"]
-        read_only_fields = ["share_token", "share_url", "share_token_created"]
+        read_only_fields = fields
 
     def get_share_url(self, obj):
+        if not obj.share_token:
+            return None
+
         request = self.context.get("request")
-        if request and obj.share_token:
+        if request:
             return request.build_absolute_uri(f"/api/storage/share/{obj.share_token}/")
-        return None

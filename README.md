@@ -68,7 +68,7 @@ GET /api/storage/{file.id}/download/ загрузка файла
 GET /api/storage/{file.id}/view/ - просмотр в браузере
 POST /api/storage/{file.id}/share/ - создание ссылки
 DELETE /api/storage/{file.id}/revoke_share/ - удаляет ссылку
-GET /api/storage/share/{share_link}/ - скачивание по ссылке
+GET /api/storage/share/{share_token}/ - скачивание по ссылке
 ```
 
 # Линтеры

@@ -11,8 +11,8 @@ router.register(r"", views.FileViewSet, basename="file")
 urlpatterns = [
     path("", include(router.urls)),
     path(
-        "share/<uuid:share_link>/",
-        views.FileShareDownloadViewSet.as_view({"get": "retrieve"}),
-        name="file-share-download",
+        "share/<str:share_link>/",
+        views.FileShareDownloadView.as_view(),
+        name="file-share-download"
     ),
 ]

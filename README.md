@@ -68,7 +68,7 @@ GET /api/storage/{file.id}/download/ загрузка файла
 GET /api/storage/{file.id}/view/ - просмотр в браузере
 POST /api/storage/{file.id}/share/ - создание ссылки
 DELETE /api/storage/{file.id}/revoke_share/ - удаляет ссылку
-GET /api/storage/share/{share_link}/ - скачивание по ссылке
+GET /api/storage/share/{share_token}/ - скачивание по ссылке
 ```
 
 # Линтеры
@@ -82,3 +82,6 @@ GET /api/storage/share/{share_link}/ - скачивание по ссылке
 ```pytest -n auto```
 * Запуск тестов + покрытие кода с полной очисткой старых отчетов
 ```coverage erase; Remove-Item -Recurse -Force htmlcov -ErrorAction SilentlyContinue; pytest -n auto --cov=. --cov-config=.coveragerc --cov-report=html --cov-report=term-missing```
+
+# Документация апи
+[API DOCS](http://127.0.0.1:8000/api/docs/)

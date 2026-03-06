@@ -59,7 +59,7 @@ def storage_revoke_share_url(storage_url):
 
 @pytest.fixture
 def storage_public_share_url():
-    """GET /api/storage/share/{share_link}/"""
+    """GET /api/storage/share/{share_token}/"""
 
     def _url(share_token):
         return f"/api/storage/share/{share_token}/"

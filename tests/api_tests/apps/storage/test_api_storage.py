@@ -444,27 +444,22 @@ class TestFileShareAPI(BaseTestAPI):
 class TestPublicShareAPI(BaseTestAPI):
     """Тесты публичного доступа по ссылкам"""
 
-    def test_download_by_share_link(
-        self, api_client, regular_user, storage_public_share_url
-    ):
+    def test_download_by_share_link(self, api_client, regular_user, storage_public_share_url):
         """
         Тест скачивания файла по публичной ссылке
         GET /api/storage/share/{share_token}/
         """
         file = UserFileFactory(user=regular_user, create_file="shared content")
 
-        # Получаем сгенерированный токен из модели
-        share_token = uuid.UUID(file.share_token)
-
-        response = api_client.get(storage_public_share_url(share_token))
+        response = api_client.get(storage_public_share_url(file.share_token))
 
         self.assert_status(response, status.HTTP_200_OK)
 
         content = b"".join(response.streaming_content)
         assert content == b"shared content"
         assert (
-            response.headers["Content-Disposition"]
-            == f'attachment; filename="{file.original_name}"'
+                response.headers["Content-Disposition"]
+                == f'attachment; filename="{file.original_name}"'
         )
 
     def test_get_share_info(self, api_client, regular_user, storage_public_share_url):
@@ -474,27 +469,22 @@ class TestPublicShareAPI(BaseTestAPI):
         """
         file = UserFileFactory(user=regular_user)
 
-        share_token_uuid = uuid.UUID(file.share_token)
-
-        url = storage_public_share_url(str(share_token_uuid))
+        url = storage_public_share_url(str(file.share_token))
         response = api_client.get(f"{url}?info=true")
 
         self.assert_status(response, status.HTTP_200_OK)
+        response_data = response.json()
 
-        # Проверяем поля, которые реально возвращает сериализатор
+        # Проверяем поля
         expected_fields = ["share_token", "share_url", "share_token_created"]
-        self.assert_response_has_fields(response.data, expected_fields)
+        self.assert_response_has_fields(response_data, expected_fields)
 
         # Проверяем значения
-        assert response.data["share_token"] == file.share_token
+        assert response_data["share_token"] == file.share_token
 
-        # Для URL используем hex (без дефисов)
-        expected_url_part = file.share_token  # это уже hex без дефисов
-        assert expected_url_part in response.data["share_url"]
-        assert (
-            response.data["share_url"]
-            == f"http://testserver/api/storage/share/{file.share_token}/"
-        )
+        # Проверяем URL
+        expected_url = f"http://testserver/api/storage/share/{file.share_token}/"
+        assert response_data["share_url"] == expected_url
 
     def test_invalid_share_link(self, api_client, storage_public_share_url):
         """
@@ -508,7 +498,7 @@ class TestPublicShareAPI(BaseTestAPI):
 
         self.assert_error_response(
             response,
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            expected_field="error",
-            expected_message="Не удалось загрузить файл",
+            status.HTTP_404_NOT_FOUND,
+            expected_field="detail",
+            expected_message="Ссылка недействительна",
         )

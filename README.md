@@ -50,6 +50,13 @@ static/
 ```python manage.py startapp accounts ./apps/<name>```
 
 
+# Заполнение базы тестовыми пользователями
+* Базовый запуск
+```python manage.py populate_db --clear --create-admin```
+* Помощь по аргументам
+```python manage.py populate_db --help```
+
+
 # API Endpoints
 * Административный интерфейс
 ```

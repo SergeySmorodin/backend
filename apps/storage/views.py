@@ -17,8 +17,8 @@ from .serializers import (
     FileListSerializer,
     FileUploadSerializer,
     FileUpdateSerializer,
+    FileShareSerializer,
 )
-from .serializers import FileShareSerializer
 
 logger = logging.getLogger(__name__)
 

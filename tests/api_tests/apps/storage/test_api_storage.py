@@ -450,6 +450,7 @@ class TestPublicShareAPI(BaseTestAPI):
         GET /api/storage/share/{share_token}/
         """
         file = UserFileFactory(user=regular_user, create_file="shared content")
+        file.regenerate_share_token()
 
         response = api_client.get(storage_public_share_url(file.share_token))
 
@@ -468,6 +469,7 @@ class TestPublicShareAPI(BaseTestAPI):
         GET /api/storage/share/{share_token}/?info=true
         """
         file = UserFileFactory(user=regular_user)
+        file.regenerate_share_token()
 
         url = storage_public_share_url(str(file.share_token))
         response = api_client.get(f"{url}?info=true")

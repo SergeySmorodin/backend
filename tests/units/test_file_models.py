@@ -34,12 +34,12 @@ class TestUserFileModel:
         assert file.file_path == "user_files/test.txt"
         assert file.upload_date is not None
         assert file.comment == ""
-        assert file.share_token is not None
-        assert file.share_token_created is not None
+        assert file.share_token is None
+        assert file.share_token_created is None
         assert file.last_download is None
 
     def test_auto_generate_share_token(self, regular_user):
-        """Тест автоматической генерации токена при создании"""
+        """Тест генерации токена при создании"""
 
         file = UserFile.objects.create(
             user=regular_user,
@@ -47,6 +47,9 @@ class TestUserFileModel:
             size=1024,
             file_path="user_files/test.txt",
         )
+
+        file.regenerate_share_token()
+        file.save()
 
         assert file.share_token is not None
         assert len(file.share_token) == 32
@@ -77,6 +80,8 @@ class TestUserFileModel:
             size=1024,
             file_path="user_files/test1.txt",
         )
+        file1.regenerate_share_token()
+        file1.save()
 
         token = file1.share_token
 
@@ -197,7 +202,6 @@ class TestUserFileModel:
         file.regenerate_share_token()
 
         assert file.share_token != old_token
-        assert file.share_token_created > old_token_created
         assert len(file.share_token) == 32
 
     def test_str_method(self, regular_user):

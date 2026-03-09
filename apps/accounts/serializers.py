@@ -12,14 +12,15 @@ logger = logging.getLogger(__name__)
 class UserSerializer(serializers.ModelSerializer):
     """Основной сериализатор пользователя"""
 
-    fullName = serializers.CharField(source='full_name', read_only=True)
-    isAdmin = serializers.BooleanField(source='is_admin', read_only=True)
+    full_name = serializers.CharField(read_only=True)
+    is_admin = serializers.BooleanField(read_only=True)
+    storage_path = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'fullName', 'isAdmin',
-            'date_joined', 'last_login'
+            'id', 'username', 'email', 'full_name', 'is_admin',
+            'date_joined', 'last_login', 'storage_path',
         ]
         read_only_fields = fields
 
@@ -62,6 +63,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")
         user = User.objects.create_user(**validated_data)
+        logger.info(f"Создан новый пользователь: {user.username} (ID: {user.id})")
         return user
 
 
@@ -80,9 +82,11 @@ class UserLoginSerializer(serializers.Serializer):
         if username and password:
             user = authenticate(username=username, password=password)
             if not user:
+                logger.warning(f"Неудачная попытка входа для пользователя: {username}")
                 raise serializers.ValidationError(
                     "Неверное имя пользователя или пароль"
                 )
+            logger.info(f"Успешный вход пользователя: {user.username}")
             if not user.is_active:
                 raise serializers.ValidationError("Пользователь деактивирован")
         else:
@@ -96,26 +100,26 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     """Сериализатор для списка пользователей (в админке)"""
-    fullName = serializers.CharField(source='full_name', read_only=True)
-    isAdmin = serializers.BooleanField(source='is_admin', read_only=True)
+
+    is_admin = serializers.BooleanField(read_only=True)
 
     # Статистика хранилища
-    storageInfo = serializers.SerializerMethodField()
+    storage_info = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'fullName', 'isAdmin',
-            'is_active', 'date_joined', 'last_login', 'storageInfo'
+            'id', 'username', 'email', 'full_name', 'is_admin',
+            'is_active', 'date_joined', 'last_login', 'storage_info',
         ]
         read_only_fields = fields
 
-    def get_storageInfo(self, obj):
+    def get_storage_info(self, obj):
         """Возвращаем статистику для админов"""
         if hasattr(obj, 'files_count'):
             return {
-                'fileCount': obj.files_count or 0,
-                'totalSize': obj.total_size or 0
+                'file_count': obj.files_count or 0,
+                'total_size': obj.total_size or 0
             }
         return None
 
@@ -175,6 +179,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def validate_is_admin(self, value):
         """Только админы могут менять is_admin"""
         request = self.context.get("request")
+
+        # Если поле не меняется - пропускаем
+        if self.instance and self.instance.is_admin == value:
+            return value
+
         if request and not (
             request.user.is_staff or request.user.is_admin or request.user.is_superuser
         ):

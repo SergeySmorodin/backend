@@ -51,10 +51,7 @@ class UserFile(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        """Автоматическая генерация токена при создании"""
-        if not self.share_token and not self.pk:
-            self.share_token = generate_share_token()
-            self.share_token_created = timezone.now()
+        """Сохранение файла"""
         super().save(*args, **kwargs)
 
     @property

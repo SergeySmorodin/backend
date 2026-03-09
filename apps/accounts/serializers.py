@@ -10,28 +10,18 @@ logger = logging.getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для детального просмотра пользователя"""
+    """Основной сериализатор пользователя"""
+
+    fullName = serializers.CharField(source='full_name', read_only=True)
+    isAdmin = serializers.BooleanField(source='is_admin', read_only=True)
 
     class Meta:
         model = User
         fields = [
-            "id",
-            "username",
-            "email",
-            "full_name",
-            "is_admin",
-            "storage_path",
-            "date_joined",
-            "last_login",
-            "is_active",
+            'id', 'username', 'email', 'fullName', 'isAdmin',
+            'date_joined', 'last_login'
         ]
-        read_only_fields = [
-            "id",
-            "storage_path",
-            "date_joined",
-            "last_login",
-            "is_active",
-        ]
+        read_only_fields = fields
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -105,19 +95,29 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
-    """Сериализатор для списка пользователей"""
+    """Сериализатор для списка пользователей (в админке)"""
+    fullName = serializers.CharField(source='full_name', read_only=True)
+    isAdmin = serializers.BooleanField(source='is_admin', read_only=True)
+
+    # Статистика хранилища
+    storageInfo = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            "id",
-            "username",
-            "email",
-            "full_name",
-            "is_admin",
-            "date_joined",
+            'id', 'username', 'email', 'fullName', 'isAdmin',
+            'is_active', 'date_joined', 'last_login', 'storageInfo'
         ]
-        read_only_fields = ["id", "date_joined"]
+        read_only_fields = fields
+
+    def get_storageInfo(self, obj):
+        """Возвращаем статистику для админов"""
+        if hasattr(obj, 'files_count'):
+            return {
+                'fileCount': obj.files_count or 0,
+                'totalSize': obj.total_size or 0
+            }
+        return None
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

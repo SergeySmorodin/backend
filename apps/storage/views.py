@@ -7,7 +7,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class FileViewSet(viewsets.ModelViewSet):
     queryset = UserFile.objects.all()
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSelf]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_serializer_class(self):
         if self.action == "create":

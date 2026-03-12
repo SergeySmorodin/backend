@@ -3,12 +3,14 @@ import os
 import uuid
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from apps.accounts.serializers import UserSerializer
 from .models import UserFile
 from .validators import validate_unique_filename, FileValidator
 
+User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
@@ -76,25 +78,50 @@ class FileUploadSerializer(serializers.ModelSerializer):
         write_only=True, required=True, validators=[FileValidator()]
     )
 
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+
     class Meta:
         model = UserFile
-        fields = ["file", "id", "original_name", "size", "comment"]
+        fields = ["file", "user", "id", "original_name", "size", "comment"]
         extra_kwargs = {"comment": {"required": False, "allow_blank": True}}
+
+    def validate_user(self, value):
+        """Только администратор может указывать другого пользователя"""
+        request = self.context.get("request")
+
+        if value is None:
+            return None
+
+        if value == request.user:
+            return value
+
+        if not hasattr(request.user, 'is_admin') or not request.user.is_admin:
+            raise serializers.ValidationError(
+                "Только администратор может загружать файлы от имени другого пользователя"
+            )
+
+        return value
 
     def validate(self, data):
         """Дополнительная валидация"""
         file = data.get("file")
-        user = self.context["request"].user
+
+        user = data.get("user") or self.context["request"].user
 
         # Проверка уникальности имени
         unique_name = validate_unique_filename(user, file.name)
         data["unique_name"] = unique_name
 
         return data
-
     def create(self, validated_data):
         file = validated_data.pop("file")
-        user = self.context["request"].user
+        # Берём указанного пользователя или текущего
+        user = validated_data.pop("user", None) or self.context["request"].user
         unique_name = validated_data.pop("unique_name", file.name)
 
         # Генерация пути для файла
@@ -120,7 +147,10 @@ class FileUploadSerializer(serializers.ModelSerializer):
             comment=validated_data.get("comment", ""),
         )
 
-        logger.info(f"Файл загружен: {unique_name}, пользователь: {user.username}")
+        logger.info(
+            f"Файл загружен: {unique_name}, владелец: {user.username}, "
+            f"загрузил: {self.context['request'].user.username}"
+        )
         return user_file
 
 

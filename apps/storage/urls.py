@@ -13,6 +13,6 @@ urlpatterns = [
     path(
         "share/<str:share_link>/",
         views.FileShareDownloadView.as_view(),
-        name="file-share-download"
+        name="file-share-download",
     ),
 ]

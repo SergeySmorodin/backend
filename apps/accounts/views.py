@@ -51,11 +51,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if self.request.user and self.request.user.is_admin:
             queryset = queryset.annotate(
-                files_count=Count('files'),
-                total_size=Sum('files__size')
+                files_count=Count("files"), total_size=Sum("files__size")
             )
 
-        return queryset.order_by('-date_joined')
+        return queryset.order_by("-date_joined")
 
     @action(
         detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated]
@@ -129,33 +128,33 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(
-        detail=True,
-        methods=["patch"],
-        url_path="toggle-admin"
-    )
+    @action(detail=True, methods=["patch"], url_path="toggle-admin")
     def toggle_admin(self, request, pk=None):
         """Переключение статуса администратора"""
 
         user = request.user
         target_user = self.get_object()
 
-        if not (user.is_staff or getattr(user, 'is_admin', False) or user.is_superuser):
+        if not (user.is_staff or getattr(user, "is_admin", False) or user.is_superuser):
             if target_user != user:
                 return Response(
-                    {'error': 'У вас недостаточно прав для выполнения данного действия.'},
-                    status=status.HTTP_403_FORBIDDEN
+                    {
+                        "error": "У вас недостаточно прав для выполнения данного действия."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
         if target_user.is_superuser:
             return Response(
-                {'error': 'Нельзя изменить права суперпользователя'},
-                status=status.HTTP_403_FORBIDDEN
+                {"error": "Нельзя изменить права суперпользователя"},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-        is_admin = request.data.get('isAdmin', not getattr(target_user, 'is_admin', False))
+        is_admin = request.data.get(
+            "isAdmin", not getattr(target_user, "is_admin", False)
+        )
         target_user.is_admin = is_admin
-        target_user.save(update_fields=['is_admin'])
+        target_user.save(update_fields=["is_admin"])
 
         serializer = self.get_serializer(target_user)
         return Response(serializer.data)

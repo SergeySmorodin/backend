@@ -19,8 +19,14 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'full_name', 'is_admin',
-            'date_joined', 'last_login', 'storage_path',
+            "id",
+            "username",
+            "email",
+            "full_name",
+            "is_admin",
+            "date_joined",
+            "last_login",
+            "storage_path",
         ]
         read_only_fields = fields
 
@@ -109,17 +115,24 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'full_name', 'is_admin',
-            'is_active', 'date_joined', 'last_login', 'storage_info',
+            "id",
+            "username",
+            "email",
+            "full_name",
+            "is_admin",
+            "is_active",
+            "date_joined",
+            "last_login",
+            "storage_info",
         ]
         read_only_fields = fields
 
     def get_storage_info(self, obj):
         """Возвращаем статистику для админов"""
-        if hasattr(obj, 'files_count'):
+        if hasattr(obj, "files_count"):
             return {
-                'file_count': obj.files_count or 0,
-                'total_size': obj.total_size or 0
+                "file_count": obj.files_count or 0,
+                "total_size": obj.total_size or 0,
             }
         return None
 

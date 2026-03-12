@@ -18,7 +18,9 @@ class TestAuthAPI(BaseTestAPI):
     POST /api/accounts/users/logout/
     """
 
-    def test_register_user(self, api_client, accounts_register_url, test_auth_user_data):
+    def test_register_user(
+        self, api_client, accounts_register_url, test_auth_user_data
+    ):
         """
         Тест регистрации пользователя
         POST /api/accounts/users/register/

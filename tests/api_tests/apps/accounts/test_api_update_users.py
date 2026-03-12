@@ -16,13 +16,15 @@ class TestUserPutDetailAPI(BaseTestAPI):
     PUT /api/accounts/users/{user.id}/
     """
 
-    def test_put_update_user_as_admin(self, admin_client, accounts_detail_url, regular_user, put_data):
+    def test_put_update_user_as_admin(
+        self, admin_client, accounts_detail_url, regular_user, put_data
+    ):
         """
         Администратор может полностью обновить данные любого пользователя
         PUT /api/accounts/users/{user.id}/
         """
         update_data = put_data
-        update_data.update({'is_admin': True})
+        update_data.update({"is_admin": True})
 
         response = admin_client.put(
             accounts_detail_url(regular_user), update_data, format="json"
@@ -33,7 +35,9 @@ class TestUserPutDetailAPI(BaseTestAPI):
         regular_user.refresh_from_db()
         assert regular_user.is_admin is True
 
-    def test_put_update_user_as_owner(self, auth_client, accounts_detail_url, regular_user, put_data):
+    def test_put_update_user_as_owner(
+        self, auth_client, accounts_detail_url, regular_user, put_data
+    ):
         """
         Пользователь может полностью обновить свои данные (кроме is_admin)
         PUT /api/accounts/users/{user.id}/
@@ -44,7 +48,9 @@ class TestUserPutDetailAPI(BaseTestAPI):
 
         self.assert_update_success(response, put_data, regular_user)
 
-    def test_put_update_other_user_as_regular(self, auth_client, accounts_detail_url, put_data):
+    def test_put_update_other_user_as_regular(
+        self, auth_client, accounts_detail_url, put_data
+    ):
         """
         Обычный пользователь не может обновить данные другого пользователя
         PUT /api/accounts/users/{another_user.id}/
@@ -59,7 +65,7 @@ class TestUserPutDetailAPI(BaseTestAPI):
 
         # Проверка, что данные не изменились
         another_user.refresh_from_db()
-        assert another_user.username != put_data['username']
+        assert another_user.username != put_data["username"]
 
 
 @pytest.mark.api
@@ -70,13 +76,15 @@ class TestUserPatchDetailAPI(BaseTestAPI):
     PATCH /api/accounts/users/{user.id}/
     """
 
-    def test_patch_update_user_as_admin(self, admin_client, accounts_detail_url, regular_user, patch_data):
+    def test_patch_update_user_as_admin(
+        self, admin_client, accounts_detail_url, regular_user, patch_data
+    ):
         """
         Администратор может частично обновить данные любого пользователя
         PATCH /api/accounts/users/{user.id}/
         """
         update_data = patch_data
-        update_data.update({'is_admin': True})
+        update_data.update({"is_admin": True})
 
         response = admin_client.patch(
             accounts_detail_url(regular_user), update_data, format="json"
@@ -85,10 +93,12 @@ class TestUserPatchDetailAPI(BaseTestAPI):
         self.assert_update_success(response, update_data, regular_user)
 
         regular_user.refresh_from_db()
-        assert regular_user.full_name == patch_data['full_name']
+        assert regular_user.full_name == patch_data["full_name"]
         assert regular_user.is_admin is True
 
-    def test_patch_update_user_as_owner(self, auth_client, accounts_detail_url, regular_user, patch_data):
+    def test_patch_update_user_as_owner(
+        self, auth_client, accounts_detail_url, regular_user, patch_data
+    ):
         """
         Пользователь может частично обновить свои данные
         PATCH /api/accounts/users/{user.id}/
@@ -99,17 +109,15 @@ class TestUserPatchDetailAPI(BaseTestAPI):
 
         self.assert_update_success(response, patch_data, regular_user)
 
-    def test_patch_update_user_cannot_change_is_admin(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_user_cannot_change_is_admin(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Обычный пользователь не может изменить свой статус is_admin
         PATCH /api/accounts/users/{user.id}/
         """
         response = auth_client.patch(
-            accounts_detail_url(regular_user),
-            {
-                "is_admin": True
-            },
-            format="json"
+            accounts_detail_url(regular_user), {"is_admin": True}, format="json"
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -119,7 +127,9 @@ class TestUserPatchDetailAPI(BaseTestAPI):
         regular_user.refresh_from_db()
         assert regular_user.is_admin is False
 
-    def test_patch_update_email_to_existing(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_email_to_existing(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Нельзя обновить email на уже существующий в системе
         PATCH /api/accounts/users/{user.id}/
@@ -128,16 +138,16 @@ class TestUserPatchDetailAPI(BaseTestAPI):
 
         response = auth_client.patch(
             accounts_detail_url(regular_user),
-            {
-                "email": another_user.email
-            },
-            format="json"
+            {"email": another_user.email},
+            format="json",
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "email" in response.data
 
-    def test_patch_update_username_to_existing(self, auth_client, accounts_detail_url, regular_user):
+    def test_patch_update_username_to_existing(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Нельзя обновить username на уже существующий в системе
         PATCH /api/accounts/users/{user.id}/
@@ -146,10 +156,8 @@ class TestUserPatchDetailAPI(BaseTestAPI):
 
         response = auth_client.patch(
             accounts_detail_url(regular_user),
-            {
-                "username": another_user.username
-            },
-            format="json"
+            {"username": another_user.username},
+            format="json",
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST

@@ -43,9 +43,6 @@ def patch_data():
 
 @pytest.fixture
 def test_login_data(regular_user):
-    user_data = {
-        "username": regular_user.username,
-        "password": "testpass123"
-    }
+    user_data = {"username": regular_user.username, "password": "testpass123"}
 
     return user_data

@@ -25,7 +25,15 @@ class TestPermissionUsersDetailAPI(BaseTestAPI):
             ("delete", status.HTTP_403_FORBIDDEN, None),
         ],
     )
-    def test_unauthorized_access(self, api_client, accounts_detail_url, regular_user, method, expected_status, payload):
+    def test_unauthorized_access(
+        self,
+        api_client,
+        accounts_detail_url,
+        regular_user,
+        method,
+        expected_status,
+        payload,
+    ):
         """
         Неавторизованный пользователь не имеет доступа к операциям с пользователями
         Параметризованный тест для всех HTTP методов
@@ -46,7 +54,9 @@ class TestPermissionUsersDetailAPI(BaseTestAPI):
 
         self.assert_status(response, expected_status)
 
-    def test_admin_has_full_access(self, admin_client, accounts_detail_url, regular_user, put_data, patch_data):
+    def test_admin_has_full_access(
+        self, admin_client, accounts_detail_url, regular_user, put_data, patch_data
+    ):
         """
         Администратор имеет полный доступ к любому пользователю
         /api/accounts/users/{user.id}/

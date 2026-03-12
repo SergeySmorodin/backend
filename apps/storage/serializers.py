@@ -24,14 +24,30 @@ class FileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFile
         fields = [
-            "id", "original_name", "size", "size_display", "upload_date",
-            "last_download", "comment", "owner", "share_token", "download_url",
-            "view_url", "file_type",
-
+            "id",
+            "original_name",
+            "size",
+            "size_display",
+            "upload_date",
+            "last_download",
+            "comment",
+            "owner",
+            "share_token",
+            "download_url",
+            "view_url",
+            "file_type",
         ]
         read_only_fields = [
-            "id", "size", "size_display", "upload_date", "last_download",
-            "owner", "share_token", "download_url", "view_url", "file_type",
+            "id",
+            "size",
+            "size_display",
+            "upload_date",
+            "last_download",
+            "owner",
+            "share_token",
+            "download_url",
+            "view_url",
+            "file_type",
         ]
 
     def get_download_url(self, obj):
@@ -63,10 +79,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
     )
 
     user = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        write_only=True,
-        required=False,
-        allow_null=True
+        queryset=User.objects.all(), write_only=True, required=False, allow_null=True
     )
 
     class Meta:
@@ -81,7 +94,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
             return None
         if value == request.user:
             return value
-        if not hasattr(request.user, 'is_admin') or not request.user.is_admin:
+        if not hasattr(request.user, "is_admin") or not request.user.is_admin:
             raise serializers.ValidationError(
                 "Только администратор может загружать файлы от имени другого пользователя"
             )
@@ -149,7 +162,9 @@ class FileUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Имя файла должно содержать расширение")
 
         # Запрещаем опасные символы
-        if any(char in value for char in ['/', '\\', '<', '>', ':', '"', '|', '?', '*']):
+        if any(
+            char in value for char in ["/", "\\", "<", ">", ":", '"', "|", "?", "*"]
+        ):
             raise serializers.ValidationError("Имя содержит недопустимые символы")
 
         # Проверка уникальности имени для пользователя
@@ -179,7 +194,7 @@ class FileShareSerializer(serializers.ModelSerializer):
             "share_url",
             "share_token_created",
             "original_name",
-            "size"
+            "size",
         ]
         read_only_fields = fields
 

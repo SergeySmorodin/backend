@@ -16,7 +16,9 @@ class TestUserDetailAPI(BaseTestAPI):
     DELETE /api/accounts/users/{user.id}/
     """
 
-    def test_delete_user_as_admin(self, admin_client, accounts_detail_url, regular_user):
+    def test_delete_user_as_admin(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Администратор может удалить другого пользователя
         DELETE /api/accounts/users/{user.id}/
@@ -25,7 +27,9 @@ class TestUserDetailAPI(BaseTestAPI):
 
         self.assert_delete_success(response, regular_user.id)
 
-    def test_admin_cannot_delete_self(self, admin_client, accounts_detail_url, admin_user):
+    def test_admin_cannot_delete_self(
+        self, admin_client, accounts_detail_url, admin_user
+    ):
         """
         Администратор не может удалить сам себя
         DELETE /api/accounts/users/{admin.id}/
@@ -46,7 +50,9 @@ class TestUserDetailAPI(BaseTestAPI):
         self.assert_permission_denied(response)
         assert User.objects.filter(id=another_user.id).exists()
 
-    def test_delete_self_as_regular_user(self, auth_client, accounts_detail_url, regular_user):
+    def test_delete_self_as_regular_user(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Обычный пользователь не может удалить сам себя
         DELETE /api/accounts/users/{user.id}/
@@ -57,7 +63,9 @@ class TestUserDetailAPI(BaseTestAPI):
         assert User.objects.filter(id=regular_user.id).exists()
         assert User.objects.filter(username=regular_user.username).exists()
 
-    def test_delete_nonexistent_user(self, admin_client, accounts_detail_url, non_existent_user):
+    def test_delete_nonexistent_user(
+        self, admin_client, accounts_detail_url, non_existent_user
+    ):
         """
         Попытка удалить несуществующего пользователя
         DELETE /api/accounts/users/{nonexistent_id}/

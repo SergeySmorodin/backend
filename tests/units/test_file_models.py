@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import timedelta
 
 import pytest
@@ -190,11 +191,7 @@ class TestUserFileModel:
             file_path="user_files/test.txt",
         )
 
-        old_token = file.share_token
-        old_token_created = file.share_token_created
-
-        # Ждем немного, чтобы время отличалось
-        import time
+        old_token = file.share_token_created
 
         time.sleep(0.01)
 

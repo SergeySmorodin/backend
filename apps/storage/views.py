@@ -226,7 +226,7 @@ class FileShareDownloadView(APIView):
     permission_classes = []
 
     def get(self, request, share_link):
-        if not share_link or not re.match(r'^[0-9a-f]{32}$', share_link, re.IGNORECASE):
+        if not share_link or not re.match(r"^[0-9a-f]{32}$", share_link, re.IGNORECASE):
             raise Http404("Ссылка недействительна")
 
         try:
@@ -235,26 +235,27 @@ class FileShareDownloadView(APIView):
             if not os.path.exists(file_obj.full_path):
                 raise Http404("Файл не найден")
 
-            if request.query_params.get('info') == 'true':
-                serializer = FileShareSerializer(file_obj, context={'request': request})
+            if request.query_params.get("info") == "true":
+                serializer = FileShareSerializer(file_obj, context={"request": request})
                 return Response(serializer.data)
 
             file_obj.update_download_date()
 
             content_type, _ = mimetypes.guess_type(file_obj.original_name)
             if not content_type:
-                content_type = 'application/octet-stream'
+                content_type = "application/octet-stream"
 
             response = FileResponse(
-                open(file_obj.full_path, 'rb'),
-                content_type=content_type
+                open(file_obj.full_path, "rb"), content_type=content_type
             )
-            response['Content-Disposition'] = f'attachment; filename="{file_obj.original_name}"'
-            response['X-Content-Type-Options'] = 'nosniff'
+            response["Content-Disposition"] = (
+                f'attachment; filename="{file_obj.original_name}"'
+            )
+            response["X-Content-Type-Options"] = "nosniff"
 
             return response
 
         except UserFile.DoesNotExist:
             raise Http404("Ссылка недействительна")
         except (IOError, OSError, PermissionError) as e:
-            raise Http404("Ошибка чтения файла")
+            raise Http404("Ошибка чтения файла", e)

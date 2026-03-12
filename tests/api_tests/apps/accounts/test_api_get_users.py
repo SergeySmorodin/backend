@@ -70,7 +70,9 @@ class TestUserGetDetailAPI(BaseTestAPI):
     GET /api/accounts/users/{user.id}/
     """
 
-    def test_get_user_detail_as_admin(self, admin_client, accounts_detail_url, regular_user):
+    def test_get_user_detail_as_admin(
+        self, admin_client, accounts_detail_url, regular_user
+    ):
         """
         Администратор может получить детальную информацию о любом пользователе
         GET /api/accounts/users/{user.id}/
@@ -88,7 +90,9 @@ class TestUserGetDetailAPI(BaseTestAPI):
         assert "storage_path" in response.data
         assert "date_joined" in response.data
 
-    def test_get_user_detail_as_owner(self, auth_client, accounts_detail_url, regular_user):
+    def test_get_user_detail_as_owner(
+        self, auth_client, accounts_detail_url, regular_user
+    ):
         """
         Пользователь может получить информацию о себе через detail URL
         GET /api/accounts/users/{user.id}/
@@ -99,7 +103,9 @@ class TestUserGetDetailAPI(BaseTestAPI):
         self.assert_user_data(response.data, regular_user)
         assert "storage_path" in response.data
 
-    def test_get_user_detail_as_regular_user_other(self, auth_client, accounts_detail_url):
+    def test_get_user_detail_as_regular_user_other(
+        self, auth_client, accounts_detail_url
+    ):
         """
         Обычный пользователь не может получить информацию о другом пользователе
         GET /api/accounts/users/{another_user.id}/
@@ -109,7 +115,9 @@ class TestUserGetDetailAPI(BaseTestAPI):
 
         self.assert_permission_denied(response)
 
-    def test_get_nonexistent_user(self, admin_client, accounts_detail_url, non_existent_user):
+    def test_get_nonexistent_user(
+        self, admin_client, accounts_detail_url, non_existent_user
+    ):
         """
         Запрос несуществующего пользователя возвращает 404
         GET /api/accounts/users/{nonexistent_id}/
@@ -120,5 +128,5 @@ class TestUserGetDetailAPI(BaseTestAPI):
 
         content = response.content.decode()
         assert (
-                "not found" in content.lower()
+            "not found" in content.lower()
         ), "Ответ должен содержать сообщение о ненайденном ресурсе"

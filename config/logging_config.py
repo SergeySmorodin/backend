@@ -56,13 +56,13 @@ LOGGING = {
             "handlers": ["file"],
             "level": "INFO",
         },
-        'corsheaders': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+        "corsheaders": {
+            "handlers": ["console"],
+            "level": "DEBUG",
         },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+        "django.request": {
+            "handlers": ["console"],
+            "level": "DEBUG",
         },
     },
 }

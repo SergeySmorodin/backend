@@ -45,7 +45,7 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
         # Если путь изменился у существующего пользователя
-        if not is_new and self.storage_path and not hasattr(self, '_storage_created'):
+        if not is_new and self.storage_path and not hasattr(self, "_storage_created"):
             pass
 
     def _create_user_storage(self):

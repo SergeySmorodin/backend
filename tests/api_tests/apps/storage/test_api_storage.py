@@ -444,7 +444,9 @@ class TestFileShareAPI(BaseTestAPI):
 class TestPublicShareAPI(BaseTestAPI):
     """Тесты публичного доступа по ссылкам"""
 
-    def test_download_by_share_link(self, api_client, regular_user, storage_public_share_url):
+    def test_download_by_share_link(
+        self, api_client, regular_user, storage_public_share_url
+    ):
         """
         Тест скачивания файла по публичной ссылке
         GET /api/storage/share/{share_token}/
@@ -459,8 +461,8 @@ class TestPublicShareAPI(BaseTestAPI):
         content = b"".join(response.streaming_content)
         assert content == b"shared content"
         assert (
-                response.headers["Content-Disposition"]
-                == f'attachment; filename="{file.original_name}"'
+            response.headers["Content-Disposition"]
+            == f'attachment; filename="{file.original_name}"'
         )
 
     def test_get_share_info(self, api_client, regular_user, storage_public_share_url):

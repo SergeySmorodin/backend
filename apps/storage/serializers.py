@@ -24,30 +24,14 @@ class FileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFile
         fields = [
-            "id",
-            "original_name",
-            "size",
-            "size_display",
-            "upload_date",
-            "last_download",
-            "comment",
-            "owner",
-            "share_token",
-            "download_url",
-            "view_url",
-            "file_type",
+            "id", "original_name", "size", "size_display", "upload_date",
+            "last_download", "comment", "owner", "share_token", "download_url",
+            "view_url", "file_type",
+
         ]
         read_only_fields = [
-            "id",
-            "size",
-            "size_display",
-            "upload_date",
-            "last_download",
-            "owner",
-            "share_token",
-            "download_url",
-            "view_url",
-            "file_type",
+            "id", "size", "size_display", "upload_date", "last_download",
+            "owner", "share_token", "download_url", "view_url", "file_type",
         ]
 
     def get_download_url(self, obj):
@@ -93,13 +77,10 @@ class FileUploadSerializer(serializers.ModelSerializer):
     def validate_user(self, value):
         """Только администратор может указывать другого пользователя"""
         request = self.context.get("request")
-
         if value is None:
             return None
-
         if value == request.user:
             return value
-
         if not hasattr(request.user, 'is_admin') or not request.user.is_admin:
             raise serializers.ValidationError(
                 "Только администратор может загружать файлы от имени другого пользователя"
@@ -110,7 +91,6 @@ class FileUploadSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Дополнительная валидация"""
         file = data.get("file")
-
         user = data.get("user") or self.context["request"].user
 
         # Проверка уникальности имени
@@ -118,6 +98,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
         data["unique_name"] = unique_name
 
         return data
+
     def create(self, validated_data):
         file = validated_data.pop("file")
         # Берём указанного пользователя или текущего
@@ -166,6 +147,10 @@ class FileUpdateSerializer(serializers.ModelSerializer):
     def validate_original_name(self, value):
         if "." not in value:
             raise serializers.ValidationError("Имя файла должно содержать расширение")
+
+        # Запрещаем опасные символы
+        if any(char in value for char in ['/', '\\', '<', '>', ':', '"', '|', '?', '*']):
+            raise serializers.ValidationError("Имя содержит недопустимые символы")
 
         # Проверка уникальности имени для пользователя
         user_files = UserFile.objects.filter(user=self.context["request"].user).exclude(

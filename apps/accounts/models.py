@@ -1,9 +1,10 @@
+import logging
 import os
 import uuid
-from django.db import models
-from django.contrib.auth.models import AbstractUser
+
 from django.conf import settings
-import logging
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -26,26 +27,37 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи"
 
     def save(self, *args, **kwargs):
-        """Создание директории пользователя при сохранении"""
+        """Сохранение пользователя и создание директории хранилища"""
+        is_new = self.pk is None
 
-        if not self.storage_path:
-            # Уникальный путь для хранилища
+        if is_new and not self.storage_path:
+            super().save(*args, **kwargs)
             user_dir = f"user_{self.id}_{uuid.uuid4().hex[:8]}"
             self.storage_path = os.path.join("users", user_dir)
 
+            # Сохраняем обновленный путь в БД
+            User.objects.filter(pk=self.pk).update(storage_path=self.storage_path)
+            self.refresh_from_db()
+            self._create_user_storage()
+            return
+
+        # Для существующих пользователей
         super().save(*args, **kwargs)
 
-        if not self.is_superuser:
-            self._create_user_storage()
+        # Если путь изменился у существующего пользователя
+        if not is_new and self.storage_path and not hasattr(self, '_storage_created'):
+            pass
 
     def _create_user_storage(self):
         """Создание директории для хранения файлов пользователя"""
+        if not self.storage_path:
+            return
 
         try:
             full_path = os.path.join(settings.MEDIA_ROOT, self.storage_path)
             os.makedirs(full_path, exist_ok=True)
             logger.info(
-                f"Создана директория хранилища для пользователя {self.username}: {full_path}"
+                f"Создана директория хранилища для пользователя {self.username} (ID: {self.id}): {full_path}"
             )
         except Exception as e:
             logger.error(

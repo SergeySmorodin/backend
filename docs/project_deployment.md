@@ -20,7 +20,7 @@
 * Проверить наличие зависимостей гит и пайтон
 ```git --version``` и ```pyhton3 –-version```
 * Установить зависимости (виртуальное окружение, pip и др.)
-```sudo apt install python3-venv python3-pip posgresql nginx``` установить в вирт окружении ```gunicorn```
+```sudo apt install -y python3-venv python3-pip postgresql nginx``` установить в вирт окружении ```gunicorn```
 * Проверить статус postgresql 
 ```sudo systemctl status postgresql```
 * Запустить вручную postgres если статус in_active
@@ -32,22 +32,37 @@
 * Проверить статус nginx
 ```sudo systemctl status nginx```
 * Создать конфигурационный файл
-```sudo nano /etc/nginx/sites-available/my_cloud_project```
+```sudo nano /etc/nginx/sites-available/backend```
 ```
 server {
     listen 80;
-    server_name <ip server>;
+    server_name 91.229.11.163;
+
+    location / {
+        root /home/kroll/frontend;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
     location /static/ {
-        root/home/<user_name>/backend/static;
+        alias /home/kroll/backend/staticfiles/;
     }
-    location = / {
-        include proxy_params;
-        proxy_pass http://unix:/home/<user_name>/backend/my_cloud_project/project.sock;
-        }
+
+    location /media/ {
+        alias /home/kroll/backend/media/;
     }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
 * Перезагрузить конфигурационный файл
-```sudo ln -s /etc/nginx/sites-available/my_cloud_project /etc/nginx/sites-enabled/```
+```sudo ln -s /etc/nginx/sites-available/backend /etc/nginx/sites-enabled/```
 * Перезагрузить nginx
 ```sudo systemctl reload nginx```
 * Проверить статус nginx
@@ -55,7 +70,7 @@ server {
 * Дать полные права ngxinx
 ```sudo ufw allow 'Nginx Full';```
 * Проверить или создать папку static чтобы ngnix мог ее видеть и сам подгружать
-```ls``` через виртуальное окружение ```python mange.py collectstatis```
+```ls``` через виртуальное окружение ```python manage.py collectstatic```
 
 # Работа c gunicorn
 * Запуск через gunicorn (отслеживания интерфейса)
@@ -63,31 +78,43 @@ server {
 * Освободить порт при ошибках
 ```fuser -k 8000/tcp```
 * Создать конфигурационный файл для авто-запуска и перезагрузки сервера
-```sudo nano etc/systemd/system/gunicron.service```
+```sudo nano /etc/systemd/system/gunicorn.service```
 ```
 [Unit]
-Description=gunicorn service
+Description=gunicorn daemon for Django backend
 After=network.target
 
 [Service]
-Group=www-data
-User=root
-WorkingDirectory=/home/'your username'/backend/
-ExecStart=/home/<your_username>/backend/my_cloud_project/bin/gunicorn --access-logfile -\
-           --workers=3 \
-           --bind unix:/home/<user_name>/backend/my_cloud_project/project.sock shortener.wsgi:application
+User=kroll
+Group=kroll
+WorkingDirectory=/home/kroll/backend
+
+Environment="PYTHONPATH=/home/kroll/backend"
+Environment="DJANGO_SETTINGS_MODULE=my_cloud_project.settings"
+Environment="PYTHONUNBUFFERED=1"
+
+ExecStart=/home/kroll/.cache/pypoetry/virtualenvs/backend-gXMrTnqX-py3.12/bin/gunicorn \
+          --pythonpath /home/kroll/backend \
+          --access-logfile /home/kroll/backend/logs/access.log \
+          --error-logfile /home/kroll/backend/logs/error.log \
+          --workers 3 \
+          --bind 0.0.0.0:8000 \
+          my_cloud_project.wsgi:application
+
+Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 ```
-* Запустить сервис
-```sudo systemctl start gunicorn```
-* * Выключить автосервис
+* Перезагрузить список служб systemd
+```sudo systemctl daemon-reload```
+* Включить автозапуск при загрузке системы
 ```sudo systemctl enable gunicorn```
-* Проверить статус сервиса (должен быть запущенным даже после остановки)
+* Запустить службу прямо сейчас
+```sudo systemctl start gunicorn```
+* Проверить статус
 ```sudo systemctl status gunicorn```
-* Должен появится файл project.sock в папке с настройками приложения (my-cloud-project)
-
 
 # Загрузка проекта на сервер из git репозитория
 * Проверить директорию (должны быть домашняя папка /home/<имя_пользователя>/)
@@ -152,5 +179,17 @@ WantedBy=multi-user.target
 * Запустить сервер
 ```python manage.py runserver 0.0.0.0:8000```
 
-
+# Создание папки frontend на сервере
+* Добавить в директории фронтенда файл .env с содержимым
+```VITE_API_URL=<ip адрес сервера>```
+* Пересобрать фронтенд локально
+```npm run build```
+* Перейти в локальную папку фронтенда или открыть там терминал
+```cd /d/MY_DOCUMENTS/IT/Netology/Diplom_fullstack/frontend/my-app```
+* Скопировать сборку в папку dist на сервер
+```scp -r dist/* kroll@91.229.11.163:/home/kroll/frontend/```
+* Далее подключится к серверу
+```ssh kroll@91.229.11.163```
+* Перезагрузить nginx
+```sudo systemctl reload nginx```
 

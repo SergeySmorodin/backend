@@ -16,12 +16,6 @@ DJANGO_SUPERUSER_EMAIL=
 DJANGO_SUPERUSER_PASSWORD=
 ```
 
-# Создать каталоги в корне проекта
-```
-media/
-static/
-```
-
 # Работа с Poetry
 * Установить Poetry
 ```pip install poetry```
@@ -33,6 +27,8 @@ static/
 ```poetry show```
 * Обновить зависимости
 ```poetry update```
+* Обновление lock-файла
+```poetry lock```
 * Создать суперюзера с данными из .env
 ```poetry run python manage.py createsuperuser --noinput```
 

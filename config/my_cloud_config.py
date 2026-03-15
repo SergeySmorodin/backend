@@ -41,3 +41,10 @@ STORAGE_SETTINGS = {
         "application/zip",
     ],
 }
+
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+
+for static_dir in STATICFILES_DIRS:
+    os.makedirs(static_dir, exist_ok=True)
+
+os.makedirs(STATIC_ROOT, exist_ok=True)

@@ -224,3 +224,33 @@ WantedBy=multi-user.target
 
 ## 4. Логи Django
 ```tail -f ~/backend/logs/django.log```
+
+# Обновление проекта
+* Активировать окружение
+```source /home/kroll/.cache/pypoetry/virtualenvs/backend-gXMrTnqX-py3.12/bin/activate```
+* Обновляем код
+```cd ~/backend && git pull origin main```
+
+* Сделать коммит, если на сервере были изменения
+```git add .```
+```git commit -m "commit message"```
+* Подтянуть изменения от удаленного репозитория
+```git pull origin main --no-rebase```
+
+* Обновить зависимости (если менялся pyproject.toml)
+```poetry install --no-root```
+* Применить миграции
+```poetry run python manage.py migrate```
+* Собрать статику
+```poetry run python manage.py collectstatic --noinput```
+* Перезапустить Gunicorn
+```sudo systemctl restart gunicorn```
+
+* Обновить dist/
+```npm run build``` и скопировать в dist на сервер (см инструкцию выше)
+
+* Перезапустить Nginx
+```sudo systemctl reload nginx```
+
+* Проверить логи
+```sudo journalctl -u gunicorn -n 20 --no-pager```

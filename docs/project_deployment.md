@@ -37,6 +37,7 @@
 server {
     listen 80;
     server_name 91.229.11.163;
+    client_max_body_size 100M;
 
     location / {
         root /home/kroll/frontend;
@@ -71,6 +72,9 @@ server {
 ```sudo ufw allow 'Nginx Full';```
 * Проверить или создать папку static чтобы ngnix мог ее видеть и сам подгружать
 ```ls``` через виртуальное окружение ```python manage.py collectstatic```
+
+* После изменения конфигурации перезагрузить nginx
+```sudo nginx -t && systemctl reload nginx```
 
 # Работа c gunicorn
 * Запуск через gunicorn (отслеживания интерфейса)
@@ -179,7 +183,7 @@ WantedBy=multi-user.target
 * Запустить сервер
 ```python manage.py runserver 0.0.0.0:8000```
 
-# Создание папки frontend на сервере
+# Создание папки dist на сервере для фронтенда
 * Добавить в директории фронтенда файл .env с содержимым
 ```VITE_API_URL=<ip адрес сервера>```
 * Пересобрать фронтенд локально
@@ -193,3 +197,30 @@ WantedBy=multi-user.target
 * Перезагрузить nginx
 ```sudo systemctl reload nginx```
 
+# Логирование ошибок
+## 1. Логи Gunicorn
+* Ошибки приложения 
+```tail -f ~/backend/logs/error.log```
+* Запросы к приложению
+```tail -f ~/backend/logs/access.log```
+* Показать весь файл ошибок целиком
+```cat ~/backend/logs/error.log```
+
+## 2. Логи Nginx
+* Ошибки Nginx
+```sudo tail -f /var/log/nginx/error.log```
+* Все запросы, которые дошли до Nginx
+```sudo tail -f /var/log/nginx/access.log```
+* Проверка конфигурации
+```sudo nginx -t```
+
+## 3. Логи Systemd
+* Лог службы 
+```sudo journalctl -u gunicorn -f```
+* Посмотреть последние ошибки сервисов
+```sudo journalctl -u gunicorn -n 50 --no-pager```
+* Текущий статус
+```sudo systemctl status gunicorn```
+
+## 4. Логи Django
+```tail -f ~/backend/logs/django.log```

@@ -81,6 +81,7 @@ POST /api/accounts/users/logout/ - выход из системы
 GET /api/accounts/users/me/ - информация о текущем пользователе
 GET /api/accounts/users/ - список пользователей
 GET PUT PATCH DELETE /api/accounts/users/<id>/ - редактирование пользователя
+PATCH /api/accounts/users/${userId}/toggle-admin - переключение прав администратора
 ```
 ### Работа с файлами
 ```

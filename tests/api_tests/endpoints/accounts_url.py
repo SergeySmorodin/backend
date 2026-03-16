@@ -44,3 +44,12 @@ def accounts_detail_url(accounts_users_url):
         return f"{accounts_users_url}{user.id}/"
 
     return _url
+
+@pytest.fixture
+def accounts_toggle_admin_url(accounts_users_url):
+    """PATCH /api/accounts/users/${userId}/toggle-admin/"""
+
+    def _url(user):
+        return f"{accounts_users_url}{user.id}/toggle-admin/"
+
+    return _url

@@ -128,7 +128,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["patch"], url_path="toggle-admin")
+    @action(
+        detail=True, methods=["patch"],
+        url_path="toggle-admin",
+        permission_classes=[IsAdminOrSelf]
+    )
     def toggle_admin(self, request, pk=None):
         """Переключение статуса администратора"""
 

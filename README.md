@@ -11,7 +11,7 @@
 * В директории backend создать файл .env в корне проекта (рядом с manage.py):
 * Сгенерировать SECRET_KEY
 ```python -c "from secrets import token_urlsafe; print(token_urlsafe(50))"```
-* Создать локальную БД и заполнить файл .env
+* Заполнить файл .env по примеру ниже, сразу заполнить значения для Postgres переменных
 ```
 DJANGO_SECRET_KEY=***
 DJANGO_DEBUG=False
@@ -25,22 +25,22 @@ POSTGRES_PORT=5432
 
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173
 ```
+* Выполнить команду в терминале или из README.md для создания пустой БД с параметрами из .env
+```python manage_db.py --create``` доступные флаги ```--drop и --recreate```
 
 ## 2. Активация виртуального окружения и установка зависимостей
 * Установить Poetry
 ```pip install poetry```
-*Активировать виртуальное окружение из папки backend
+* Активировать виртуальное окружение из папки backend
 ```poetry env activate```
-* Установить зависимости
+* Проверить установленные библиотеки
+```poetry show```
+* При отсутствии установить зависимости
 ```poetry install --no-root```
 * При ошибках удалить lock file и повторно выполнить команду установки
 ```rm poetry.lock``` и переустановить ```poetry install --no-root```
-* Проверить установленные библиотеки
-```poetry show```
-  
+
 ## 3. Создание локальной базы данных
- * Создать локальную БД
-```createdb -U <user postgres> <name db>```
 * Создать миграции
 ```python manage.py makemigrations```
 * Применить миграции
@@ -56,7 +56,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhos
 
 # *РАЗВЕРТЫВАНИЕ ФРОНТЕНДА*
 ## 1. Настройка переменных окружения
-#### В директории frontend создать файл .env в корне проекта (рядом с package.json):
+#### В директории frontend/my-app создать файл .env в корне проекта (рядом с package.json):
 ```VITE_API_URL=http://localhost:8000```
 
 ## 2. Установка зависимостей

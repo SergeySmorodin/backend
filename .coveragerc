@@ -15,6 +15,9 @@ omit =
     static/*
     media/*
     templates/*
+    scripts/*
+    manage_db.py
+    *populate_db.py
 
 [coverage:paths]
 source =

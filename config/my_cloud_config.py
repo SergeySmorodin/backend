@@ -5,40 +5,30 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# URL для доступа к медиа-файлам
 MEDIA_URL = "/media/"
-
-# Путь к директории для хранения загруженных файлов
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGE_SETTINGS = {
-    "BASE_STORAGE_PATH": MEDIA_ROOT,
+    "BASE_STORAGE_PATH": str(MEDIA_ROOT),
     "MAX_FILE_SIZE": 100 * 1024 * 1024,  # 100 MB
     "ALLOWED_EXTENSIONS": [
-        ".txt",
-        ".pdf",
-        ".doc",
-        ".docx",
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-        ".zip",
-        ".rar",
-        ".7z",
+        ".txt", ".pdf", ".doc", ".docx",
+        ".jpg", ".jpeg", ".png", ".gif",
+        ".zip", ".rar", ".7z",
+        ".xlsx", ".xls",
     ],
     "ALLOWED_MIME_TYPES": [
         "text/plain",
         "application/pdf",
-        "image/jpeg",
-        "image/png",
-        "image/gif",
+        "image/jpeg", "image/png", "image/gif",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/zip",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ],
 }
 

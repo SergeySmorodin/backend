@@ -22,19 +22,19 @@ class IsAdminOrSelf(permissions.BasePermission):
         """
         user = request.user
 
-        # Определяем владельца объекта
-        if hasattr(obj, "user"):
-            is_owner = obj.user == user
-        else:
-            is_owner = obj == user
+        # Определяем владельца
+        is_owner = (obj == user) or (getattr(obj, 'user', None) == user)
 
-        # Админ может всё
-        if user.is_staff or user.is_admin or user.is_superuser:
+        # Суперпользователь или is_admin=True может всё
+        if user.is_superuser or getattr(user, "is_admin", False) or user.is_staff:
             return True
 
-        # Для безопасных методов (GET, HEAD, OPTIONS) - можно читать свои объекты
+        if view.action == "toggle_admin":
+            return False
+
+        # Для безопасных методов (GET) — можно читать свои объекты
         if request.method in permissions.SAFE_METHODS:
             return is_owner
 
-        # Для всех остальных методов (POST, PUT, PATCH, DELETE) - только свои объекты
+        # Для остальных методов — только свои объекты
         return is_owner
